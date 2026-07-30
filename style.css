@@ -1636,3 +1636,108 @@ img {
         height: 280px;
     }
 }
+/* ===== MOBILE NAVBAR & GLOBAL SCALING OVERRIDES ===== */
+@media (max-width: 768px) {
+	/* 1. Navbar Container Padding & Height */
+	.navbar {
+		padding: 5px 12px;
+		height: 50px;
+	}
+
+	/* 2. Smaller Logo in Top Bar */
+	.logo img {
+		height: 45px; /* Scaled down from 85px */
+	}
+
+	/* 3. Navigation Links (HOME, ABOUT, DEMO, etc.) */
+	.navbar nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 6px;
+	}
+
+	.navbar a {
+		margin-left: 0;
+		font-size: 10px; /* Reduced font size so all items fit */
+		padding: 2px 4px;
+	}
+
+	.navbar nav a {
+		font-size: 10px;
+	}
+
+	/* 4. General Element Scaling for Mobile */
+	.hud-title {
+		font-size: 26px;
+		letter-spacing: 2px;
+	}
+
+	.hud-subtitle {
+		font-size: 12px;
+		margin-bottom: 30px;
+	}
+
+	.hud-section {
+		padding: 60px 15px;
+	}
+
+	.section {
+		padding: 50px 20px;
+	}
+
+	.hud-controls {
+		grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+		gap: 15px;
+	}
+
+	.hud-control {
+		padding: 15px 10px;
+	}
+
+	.hud-control span {
+		font-size: 24px;
+	}
+
+	.hud-control h4 {
+		font-size: 13px;
+	}
+
+	.hud-control p {
+		font-size: 11px;
+	}
+
+	.hud-updates {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 15px;
+	}
+
+	.hud-update-card {
+		width: 100%;
+		height: 140px;
+		padding: 15px 10px;
+	}
+
+	.hud-update-card.hud-update-wide {
+		width: 100%;
+		grid-column: span 2;
+	}
+
+	.hud-faq-question {
+		padding: 14px 18px;
+	}
+
+	.hud-faq-question h4 {
+		font-size: 13px;
+	}
+
+	.top-readout h1 {
+		font-size: 1.6rem;
+		letter-spacing: 4px;
+	}
+
+	.artifact-container {
+		width: 280px;
+		height: 280px;
+	}
+}
