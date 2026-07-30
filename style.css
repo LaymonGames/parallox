@@ -45,6 +45,69 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ===== MOTION / MOBILE PERFORMANCE OVERRIDES ===== */
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+@media (max-width: 768px) {
+	/* these ambient layers animate background-position/gradients every frame,
+	   which can't be GPU-accelerated the way transform/opacity can — that's a
+	   full-page repaint cost on every scroll frame for very little payoff on
+	   a small screen. Freeze them instead of turning them off completely. */
+	.god-rays,
+	.star-dust,
+	.nebula-layer,
+	.hud-frame-glow {
+		animation: none;
+	}
+
+	/* backdrop-filter is one of the most expensive properties on mobile GPUs,
+	   especially on a fixed navbar that has to re-blur on every scroll frame. */
+	.navbar,
+	.hud-control,
+	.hud-terminal,
+	.hud-support,
+	.hud-faq-item,
+	.hud-update-card,
+	.lux-mail {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
+	.navbar {
+		background: rgba(0, 0, 0, 0.85);
+	}
+
+	/* animating filter:blur() is expensive to repaint; drop it on mobile and
+	   keep just the cheap transform/opacity part of the carousel transition */
+	.cinema-card {
+		transition: transform 0.5s ease, opacity 0.5s ease;
+	}
+	.cinema-card.left-1,
+	.cinema-card.left-2,
+	.cinema-card.right-1,
+	.cinema-card.right-2 {
+		filter: none;
+	}
+}
+
+/* Skip layout/paint work for sections that are offscreen until they're
+   about to scroll into view. contain-intrinsic-size is a placeholder
+   estimate here — tune per-section once real content/heights are known,
+   or the scrollbar can jump slightly as sections resolve their true size. */
+.section,
+.hud-section,
+.cinema-section,
+.contact-luxury {
+	content-visibility: auto;
+	contain-intrinsic-size: auto 900px;
+}
+
 
 /* LOGO IMAGE */
 .logo img{
@@ -393,7 +456,8 @@ img {
 .video-intro{
   position:relative;
   width:100%;
-  height:120vh;
+  height:120vh; /* fallback for browsers without dvh support */
+  height:120dvh; /* tracks the real visible viewport, so mobile browser UI (address bar showing/hiding) can't clip the bottom of the section */
   background:#0b0f1a;
   overflow:hidden;
 }
@@ -404,7 +468,18 @@ img {
   width:100%;
   height:100%;
   object-fit:cover;
+  object-position:center;
   background:#0b0f1a;
+}
+
+@media (max-width:768px){
+	/* the source video is 16:9 — matching the container to that ratio means
+	   object-fit:cover has nothing to crop, instead of scaling a widescreen
+	   clip up to fill a tall portrait box and cutting off most of the frame */
+	.video-intro{
+		height:auto;
+		aspect-ratio:16/9;
+	}
 }
 
 
@@ -432,6 +507,7 @@ img {
   justify-content:center;
   align-items:center;
   transform-style:preserve-3d;
+  touch-action:pan-y;
 }
 
 .cinema-card{
@@ -1512,4 +1588,51 @@ img {
 
 .donate-copied.show {
   opacity: 1;
+}
+
+
+/* ===== MOBILE HERO / ABOUT SECTION FIXES ===== */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 100px 25px 50px;
+        gap: 40px;
+        min-height: auto;
+    }
+    .hero-text {
+        width: 100%;
+        text-align: center;
+    }
+    .hero-text h1 {
+        font-size: 46px;
+    }
+    .hero-text h2 {
+        font-size: 16px;
+    }
+    .hero-text p {
+        font-size: 15px;
+        margin: 15px 0 25px;
+    }
+    .buttons .btn {
+        margin: 6px;
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+    .hero-img {
+        width: 100%;
+        height: 320px;
+        order: 2;
+    }
+    .hero-img .char {
+        width: 220px;
+    }
+    .glow {
+        width: 260px;
+        height: 260px;
+    }
+    .dimension-ring {
+        width: 280px;
+        height: 280px;
+    }
 }

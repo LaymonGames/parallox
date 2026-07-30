@@ -1,11 +1,25 @@
+/* ===== THROTTLED HERO PARALLAX ===== */
 const hero = document.querySelector(".hero-img");
+const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-window.addEventListener("mousemove", e => {
-  const x = (window.innerWidth / 2 - e.clientX) / 30;
-  const y = (window.innerHeight / 2 - e.clientY) / 30;
+if (hero && canHover) {
+	let heroTicking = false;
+	let heroX = 0;
+	let heroY = 0;
 
-  hero.style.transform = `translate(${x}px, ${y}px)`;
-});
+	window.addEventListener("mousemove", e => {
+		heroX = (window.innerWidth / 2 - e.clientX) / 30;
+		heroY = (window.innerHeight / 2 - e.clientY) / 30;
+
+		if (!heroTicking) {
+			heroTicking = true;
+			requestAnimationFrame(() => {
+				hero.style.transform = `translate(${heroX}px, ${heroY}px)`;
+				heroTicking = false;
+			});
+		}
+	}, { passive: true });
+}
 
 
 function closeLightbox(){
@@ -79,29 +93,45 @@ document.addEventListener('keydown', e => {
 });
 
 
+/* ===== THROTTLED 3D ARTIFACT TILT ===== */
     const artifact = document.getElementById('artifact');
-    const body = document.querySelector(".omega-root");
+    const omegaRoot = document.querySelector(".omega-root");
 
-    document.addEventListener('mousemove', (e) => {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const rotateY = (e.clientX - centerX) / 25; 
-        const rotateX = (centerY - e.clientY) / 25;
-        artifact.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    });
+    if (artifact && canHover) {
+	let artifactTicking = false;
+	let tiltX = 0;
+	let tiltY = 0;
+
+	document.addEventListener('mousemove', (e) => {
+		const centerX = window.innerWidth / 2;
+		const centerY = window.innerHeight / 2;
+		tiltY = (e.clientX - centerX) / 25;
+		tiltX = (centerY - e.clientY) / 25;
+
+		if (!artifactTicking) {
+			artifactTicking = true;
+			requestAnimationFrame(() => {
+				artifact.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+				artifactTicking = false;
+			});
+		}
+	}, { passive: true });
+    }
 
     let isLaunching = false;
 
     function engateSingularity() {
         if(isLaunching) return;
+        if(!omegaRoot) return;
         isLaunching = true;
 
         const actionText = document.getElementById('action-text');
         const statusText = document.getElementById('system-status');
         const flash = document.querySelector('.event-horizon-flash');
+        if(!actionText || !statusText || !flash) return;
 
 
-        body.classList.add('charging');
+        omegaRoot.classList.add('charging');
         actionText.innerText = "ERROR";
         actionText.style.color = "#ff0055";
         statusText.innerHTML = "CRITICAL FAILURE";
@@ -109,7 +139,7 @@ document.addEventListener('keydown', e => {
 
 
         setTimeout(() => {
-            body.classList.add('breach');
+            omegaRoot.classList.add('breach');
             statusText.innerText = "what have I done.";
              actionText.style.opacity = 0;
         }, 1500);
@@ -132,31 +162,32 @@ let startX = 0;
 let isDragging = false;
 const carousel = document.querySelector('.carousel-container');
 
-carousel.addEventListener('mousedown', e => {
-  startX = e.clientX;
-  isDragging = true;
-});
+if (carousel) {
+	carousel.addEventListener('mousedown', e => {
+		startX = e.clientX;
+		isDragging = true;
+	});
 
-carousel.addEventListener('mouseup', e => {
-  if (!isDragging) return;
-  const diff = e.clientX - startX;
-  handleSwipe(diff);
-  isDragging = false;
-});
+	carousel.addEventListener('mouseup', e => {
+		if (!isDragging) return;
+		const diff = e.clientX - startX;
+		handleSwipe(diff);
+		isDragging = false;
+	});
 
-carousel.addEventListener('mouseleave', () => {
-  isDragging = false;
-});
+	carousel.addEventListener('mouseleave', () => {
+		isDragging = false;
+	});
 
+	carousel.addEventListener('touchstart', e => {
+		startX = e.touches[0].clientX;
+	}, { passive: true });
 
-carousel.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-});
-
-carousel.addEventListener('touchend', e => {
-  const diff = e.changedTouches[0].clientX - startX;
-  handleSwipe(diff);
-});
+	carousel.addEventListener('touchend', e => {
+		const diff = e.changedTouches[0].clientX - startX;
+		handleSwipe(diff);
+	}, { passive: true });
+}
 
 function handleSwipe(diff){
   const threshold = 50;
