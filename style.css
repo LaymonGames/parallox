@@ -1398,7 +1398,8 @@ img {
     gap: 20px;
   }
   
-  .lux-mail {
+  .lux-mail,
+  .lux-donate-card {
     padding: 20px;
     flex-direction: column;
     text-align: center;
@@ -1553,6 +1554,82 @@ img {
   }
 }
 
+/* PAYPAL DONATION CARD */
+.lux-donate-card {
+  position: relative;
+  padding: 25px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 0, 60, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  overflow: hidden;
+}
+
+.lux-donate-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255, 0, 60, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: 0.5s;
+  pointer-events: none;
+}
+
+.lux-donate-card:hover::before {
+  transform: translateX(100%);
+}
+
+.lux-donate-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 0, 60, 0.08);
+  box-shadow: 0 10px 40px rgba(255, 0, 60, 0.15);
+  border-color: #ff003c;
+}
+
+.lux-donate-card-btn,
+.paypal-donate-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 30px;
+  padding: 13px 22px;
+  background: linear-gradient(135deg, #ff003c, #b3002a);
+  color: #fff;
+  text-decoration: none;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 0, 60, 0.35);
+  transition: 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+  z-index: 2;
+}
+
+.lux-donate-card-btn:hover,
+.paypal-donate-link:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 0 35px rgba(255, 0, 60, 0.7);
+}
+
+.paypal-donate-link {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 6px;
+}
+
+.donate-note {
+  margin: 16px 0 0;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 /* DONATE MODAL EXTRA */
 .donate-content {
   max-width: 420px;
@@ -1561,35 +1638,7 @@ img {
   aspect-ratio: auto;
 }
 
-.donate-email {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,0,60,0.4);
-  padding: 14px;
-  border-radius: 12px;
-  font-family: 'Share Tech Mono', monospace;
-  color: #00ffcc;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.donate-email:hover {
-  background: #00ffcc;
-  color: #000;
-  box-shadow: 0 0 25px #00ffcc;
-}
-
-.donate-copied {
-  margin-top: 15px;
-  color: #00ff88;
-  opacity: 0;
-  transition: 0.3s;
-  letter-spacing: 2px;
-}
-
-.donate-copied.show {
-  opacity: 1;
-}
-
+/* Donation-email UI removed: donations now use PayPal. */
 
 /* ===== MOBILE HERO / ABOUT SECTION FIXES ===== */
 @media (max-width: 768px) {

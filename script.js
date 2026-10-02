@@ -285,15 +285,3 @@ function closeDonateModal(){
   document.body.style.overflow = "";
 }
 
-function copyDonateEmail(){
-  const email = "gamesbylaymon@gmail.com";
-  const msg = document.getElementById("donateCopied");
-
-  navigator.clipboard.writeText(email).then(() => {
-    msg.classList.add("show");
-
-    setTimeout(() => {
-      msg.classList.remove("show");
-    }, 2000);
-  });
-}
