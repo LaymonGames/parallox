@@ -42,6 +42,7 @@ body {
   padding:10px 60px;
   height:70px;
   position:fixed;
+  top:0;
   width:100%;
   background:rgba(0,0,0,.6);
   backdrop-filter:blur(10px);
@@ -168,7 +169,6 @@ html {
    everything else is frozen instead of being composited for nothing. */
 .hero:not(.in-view) .char,
 .hero:not(.in-view) .dimension-ring,
-.hero:not(.in-view) .glow,
 .omega-wrapper:not(.in-view) .nebula-layer,
 .omega-wrapper:not(.in-view) .star-dust,
 .omega-wrapper:not(.in-view) .god-rays,
@@ -530,16 +530,6 @@ footer{
   height:auto;          /* keeps the 640x672 aspect ratio instead of squashing it */
   z-index:3;
   animation: float 4s ease-in-out infinite;
-}
-
-/* GLOW */
-.glow{
-  position:absolute;
-  width:360px;
-  height:360px;
-  background:radial-gradient(circle, #ff003c55, transparent 70%);
-  filter:blur(40px);
-  z-index:1;
 }
 
 /* DIMENSION RING — the red circle around the floating LL. Its top arc is
@@ -1897,10 +1887,6 @@ footer{
     }
     .hero-img .char {
         width: 220px;
-    }
-    .glow {
-        width: 260px;
-        height: 260px;
     }
     .dimension-ring {
         width: 280px;
