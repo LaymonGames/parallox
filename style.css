@@ -258,8 +258,19 @@ html {
 	}
 	@keyframes navPress {
 		0%   { transform: translateY(0) scale(1);      background: transparent;    color: #fff; }
-		35%  { transform: translateY(3px) scale(.92);  background: rgba(255, 0, 60, .28); color: #ff003c; }
+		35%  { transform: translateY(3px) scale(.92);  background: rgba(255, 0, 60, .45); color: #ff003c; }
 		100% { transform: translateY(0) scale(1);      background: transparent;    color: #fff; }
+	}
+	/* Phone browsers paint their default blue tap-highlight over links on
+		press. Force the section-name buttons to flash red on touch as well
+		so no blue ever leaks through. */
+	.navbar nav.open a:active {
+		background: rgba(255, 0, 60, .45);
+		color: #ff003c;
+	}
+	.navbar nav.open a:focus {
+		outline: 2px solid #ff003c;
+		outline-offset: 2px;
 	}
 }
 
