@@ -1,3 +1,23 @@
+/* ===== SELF-HOSTED FONTS =====
+   Previously the page blocked rendering on a request to fonts.googleapis.com,
+   and 'Share Tech Mono' (used by the HUD/omega section) was never loaded at all.
+   Both faces now ship with the repository: zero external requests, no render block. */
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:400 900;
+  font-display:swap;
+  src:url('assets/fonts/orbitron.woff2') format('woff2');
+}
+
+@font-face{
+  font-family:'Share Tech Mono';
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url('assets/fonts/share-tech-mono.woff2') format('woff2');
+}
+
 *{
   margin:0;
   padding:0;
@@ -34,12 +54,40 @@ body {
 }
 
 .navbar a{
+  display:inline-block;
   margin-left:25px;
+  padding:6px 6px;
   text-decoration:none;
   color:#fff;
   transition:.3s;
 }
 .navbar a:hover{color:#ff003c;}
+.navbar a:focus-visible{outline:2px solid #ff003c;outline-offset:2px;}
+
+/* Hamburger — only ever shown on touch/narrow screens. */
+.nav-toggle{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  width:44px;
+  height:44px;
+  background:transparent;
+  border:1px solid rgba(255,0,60,.35);
+  border-radius:8px;
+  cursor:pointer;
+  flex-direction:column;
+}
+.nav-toggle span{
+  display:block;
+  width:20px;
+  height:2px;
+  background:#fff;
+  transition:.25s;
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;}
+.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
 html {
   scroll-behavior: smooth;
@@ -108,20 +156,151 @@ html {
 	contain-intrinsic-size: auto 900px;
 }
 
-
-/* LOGO IMAGE */
-.logo img{
-  height:85px;
-  width:auto;
-  object-fit:contain;
-  filter: drop-shadow(0 0 8px #ae00ff66);
-  transition:0.3s ease;
+.omega-wrapper {
+	content-visibility: auto;
+	contain-intrinsic-size: auto 100vh;
 }
 
-.logo img:hover{
-  transform:scale(1.05);
-  filter: drop-shadow(0 0 12px #a200ff);
+/* ===== VIEWPORT-AWARE ANIMATION GATING =====
+   The ambient layers (nebula blur, star drift, god rays, HUD glow, the three
+   energy rings) tick every frame even when their section is nowhere near the
+   screen. script.js adds .in-view to a section only while it is on screen, so
+   everything else is frozen instead of being composited for nothing. */
+.hero:not(.in-view) .char,
+.hero:not(.in-view) .dimension-ring,
+.hero:not(.in-view) .glow,
+.omega-wrapper:not(.in-view) .nebula-layer,
+.omega-wrapper:not(.in-view) .star-dust,
+.omega-wrapper:not(.in-view) .god-rays,
+.omega-wrapper:not(.in-view) .ring-outer,
+.omega-wrapper:not(.in-view) .ring-mid,
+.omega-wrapper:not(.in-view) .ring-inner,
+.omega-wrapper:not(.in-view) .vortex-energy,
+.omega-wrapper:not(.in-view) .event-horizon-flash,
+.hud-section:not(.in-view) .hud-frame-glow {
+	animation: none;
 }
+
+/* ===== MOBILE NAVIGATION ===== */
+@media (max-width: 900px) {
+	.navbar {
+		padding: 8px 16px;
+		padding-left: max(16px, env(safe-area-inset-left));
+		padding-right: max(16px, env(safe-area-inset-right));
+	}
+
+	.portfolio-link {
+		padding: 3px;
+		margin-left: 0;
+	}
+
+	.portfolio-link img { width: 44px; height: 44px; }
+
+	.nav-toggle { display: flex; }
+
+	/* The drawer always lives in the tree below the fixed bar; it fades and
+	   drops in when open instead of popping in via display toggling, so the
+	   rows can animate their own staggered entrance. */
+	.navbar nav {
+		display: flex;
+		flex-direction: column;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+	 background: rgba(0, 0, 0, 0.92);
+		border-top: 1px solid rgba(255, 0, 60, 0.25);
+		padding: 4px 16px 14px;
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(10px);
+		transform-origin: top;
+		transition: opacity .22s ease, transform .26s cubic-bezier(.19, 1, .22, 1), visibility 0s linear .22s;
+	}
+
+	.navbar nav.open {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0);
+		transition: opacity .22s ease, transform .26s cubic-bezier(.19, 1, .22, 1), visibility 0s;
+	}
+
+	/* 44px tall rows: real tap targets. Staggered drop-in while the drawer
+	   opens; plain fade-out while it closes (no per-row close delay). */
+	.navbar nav a {
+		margin: 0;
+		padding: 13px 10px;
+		font-size: 14px;
+		letter-spacing: 1.1px;
+		opacity: 0;
+		transform: translateY(12px);
+		transition: opacity .28s ease, transform .34s cubic-bezier(.19, 1, .22, 1), background-color .15s ease, color .15s ease;
+	}
+	.navbar nav.open a {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	.navbar nav.open a:nth-child(1) { transition-delay: .04s; }
+	.navbar nav.open a:nth-child(2) { transition-delay: .07s; }
+	.navbar nav.open a:nth-child(3) { transition-delay: .10s; }
+	.navbar nav.open a:nth-child(4) { transition-delay: .13s; }
+	.navbar nav.open a:nth-child(5) { transition-delay: .16s; }
+	.navbar nav.open a:nth-child(6) { transition-delay: .19s; }
+
+	/* Press feedback on the section name buttons: a quick pop with a red
+	   flash that settles back, then the drawer fades out on top of it. The
+	   .nav-press class is added in script.js and stripped when the keyframes
+	   finish. (Keyed off nav, not nav.open, because tapping a link closes the
+	   drawer on the same click.) */
+	.navbar nav a.nav-press {
+		animation: navPress .35s cubic-bezier(.3, .9, .25, 1.35) both;
+	}
+	@keyframes navPress {
+		0%   { transform: translateY(0) scale(1);      background: transparent;    color: #fff; }
+		35%  { transform: translateY(3px) scale(.92);  background: rgba(255, 0, 60, .28); color: #ff003c; }
+		100% { transform: translateY(0) scale(1);      background: transparent;    color: #fff; }
+	}
+}
+
+
+/* PORTFOLIO BUTTON — icon-only pixel sprite (replaces the old navbar logo).
+   The Laymon sprite is pixel art, so it is drawn with pixelated upscaling,
+   shown larger (44px), and carries no text. */
+.portfolio-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:3px;
+  border:1px solid rgba(255,0,60,.35);
+  border-radius:10px;
+  background:rgba(12,14,30,.55);
+  color:#fff;
+  text-decoration:none;
+  transition:.3s ease;
+  box-shadow:0 0 14px rgba(174,0,255,.18);
+}
+
+.portfolio-link img{
+  width:44px;
+  height:44px;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 0 8px #ae00ff66);
+  transition:transform .3s ease, filter .3s ease;
+}
+
+.portfolio-link:hover{
+  color:#ff003c;
+  border-color:#ff003c;
+  box-shadow:0 0 20px rgba(255,0,60,.35);
+  transform:translateY(-2px);
+}
+
+.portfolio-link:hover img{
+  transform:scale(1.08);
+  filter:drop-shadow(0 0 12px #a200ff);
+}
+
+.portfolio-link:focus-visible{outline:2px solid #ff003c;outline-offset:2px;}
 
 
 /* HERO */
@@ -130,7 +309,12 @@ html {
   display:flex;
   align-items:center;
   padding:100px 60px;
-  background:url(assets/bg.jpg) center/cover;
+  /* assets/bg.jpg does not exist in the repository — this rule 404s on every
+     page load. Replaced with an equivalent in-CSS gradient so nothing is fetched. */
+  background:
+    radial-gradient(1200px 600px at 70% 20%, rgba(255,0,60,.10), transparent 60%),
+    radial-gradient(900px 500px at 20% 80%, rgba(0,243,255,.07), transparent 60%),
+    #0b0f1a;
 }
 
 .hero-text{
@@ -180,6 +364,7 @@ html {
 }
 
 .btn.ghost{
+  background:transparent;
   border:1px solid #ff003c;
   color:#ff003c;
 }
@@ -330,22 +515,6 @@ footer{
   opacity:1;
 }
 
-/* LIGHTBOX */
-#lightbox{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.9);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-
-#lightbox img{
-  max-width:90%;
-  max-height:90%;
-  border-radius:20px;
-}
 .hero-img{
   position:relative;
   width:45%;
@@ -358,6 +527,7 @@ footer{
 /* CHARACTER */
 .hero-img .char{
   width:320px;
+  height:auto;          /* keeps the 640x672 aspect ratio instead of squashing it */
   z-index:3;
   animation: float 4s ease-in-out infinite;
 }
@@ -372,15 +542,21 @@ footer{
   z-index:1;
 }
 
-/* DIMENSION RING */
+/* DIMENSION RING — the red circle around the floating LL. Its top arc is
+   the hard red edge sitting between the video and the floating LL. Instead
+   of a hard line, the border now interpolates smoothly to transparent at
+   the top (a gradient mask). The ring is a perfect circle, so the old
+   spin rotation had no visible effect — removed so the fade stays fixed
+   at the top. */
 .dimension-ring{
   position:absolute;
   width:420px;
   height:420px;
   border:2px solid #ff003c;
   border-radius:50%;
-  animation: spin 10s linear infinite;
   opacity:.6;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 25%, #000 100%);
+  mask-image:linear-gradient(to bottom, transparent 0%, #000 25%, #000 100%);
 }
 
 /* ANIMATIONS */
@@ -389,24 +565,28 @@ footer{
   50%{transform:translateY(-15px)}
 }
 
-@keyframes spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
-
-img {
+/* Pixel art needs crisp nearest-neighbour upscaling. Applying `pixelated` to
+   every <img> (as it was before) makes the downscaled screenshots and the
+   vector-ish logo jagged, so it is scoped to the actual sprite art. */
+.character img,
+.hero-img .char {
   image-rendering: pixelated;
 }
 
 /* CHARACTERS */
 .characters{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  /* flex-wrap + justify-content:center keeps the last (Walter) card centred
+     when the row wraps. A grid left it stranded in the left column. */
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
   gap:30px;
   margin-top:50px;
 }
 
 .character{
+  flex:1 1 220px;
+  max-width:280px;
   background:#0d111c;
   border-radius:20px;
   padding:20px;
@@ -452,13 +632,15 @@ img {
   margin-bottom:15px;
 }
 
-/* VIDEO INTRO SECTION */
+/* VIDEO INTRO — original look restored: full-bleed on desktop, 16/9 strip
+   on mobile (as it was before). object-fit:contain means the whole frame
+   is always visible, nothing cropped. On mobile only, the strip is shifted
+   below the fixed 56px top bar so nothing is hidden behind it; desktop is
+   unchanged. */
 .video-intro{
   position:relative;
   width:100%;
   height:120vh; /* fallback for browsers without dvh support */
-  height:120dvh; /* tracks the real visible viewport, so mobile browser UI (address bar showing/hiding) can't clip the bottom of the section */
-  background:#0b0f1a;
   overflow:hidden;
 }
 
@@ -467,18 +649,20 @@ img {
   inset:0;
   width:100%;
   height:100%;
-  object-fit:cover;
-  object-position:center;
   background:#0b0f1a;
+  /* 16:9 source video — contain keeps the entire frame visible; cover
+     would crop edges */
+  object-fit:contain;
+  object-position:center;
 }
 
 @media (max-width:768px){
-	/* the source video is 16:9 — matching the container to that ratio means
-	   object-fit:cover has nothing to crop, instead of scaling a widescreen
-	   clip up to fill a tall portrait box and cutting off most of the frame */
+	/* mobile-only: the fixed header bar is 56px tall, so shift the 16/9
+	   strip below it to keep the whole clip visible */
 	.video-intro{
 		height:auto;
 		aspect-ratio:16/9;
+		margin-top:56px;
 	}
 }
 
@@ -521,13 +705,18 @@ img {
   box-shadow:0 20px 50px rgba(0,0,0,0.8);
   border:1px solid #333;
 
-  will-change:transform, opacity, filter;
+  /* will-change on all seven cards promotes seven permanent compositor layers
+     for the whole page. Only the card that is actually moving needs it. */
   transition:
     transform 0.7s cubic-bezier(0.19, 1, 0.22, 1),
     opacity 0.7s cubic-bezier(0.19, 1, 0.22, 1),
     filter 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 
   -webkit-box-reflect: below 0px linear-gradient(transparent, transparent, rgba(0,0,0,0.3));
+}
+
+.cinema-card.center{
+  will-change: transform, opacity, filter;
 }
 
 .cinema-card img.poster{
@@ -541,9 +730,10 @@ img {
   content:'';
   position:absolute;
   inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
-  opacity:.8;
-  transition:.5s;
+  /* deeper bottom scrim so the overlay text always sits on a dark band */
+  background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 32%, rgba(0,0,0,0.25) 48%, rgba(0,0,0,0.06) 65%, transparent 74%);
+  opacity:.9;
+  transition:opacity .5s;
 }
 
 .cinema-card .top-bar{
@@ -559,6 +749,7 @@ img {
 
 .cinema-card .top-bar .logo{
   height:25px;
+  width:auto;           /* 64x67 emblem — forcing a width squashes it */
   filter: drop-shadow(0 2px 2px rgba(0,0,0,.8));
 }
 
@@ -575,9 +766,9 @@ img {
 
 .cinema-card .card-content{
   position:absolute;
-  bottom:20px;
-  left:25px;
-  right:25px;
+  bottom:18px;
+  left:24px;
+  right:24px;
   color:#fff;
   z-index:2;
   opacity:0;
@@ -587,17 +778,22 @@ img {
 }
 
 .cinema-card .card-title{
-  font-size:1.8em;
+  font-size:1.45em;
   font-weight:700;
   display:block;
-  margin-bottom:5px;
-  text-shadow:0 2px 4px rgba(0,0,0,.8);
+  margin-bottom:4px;
+  letter-spacing:.5px;
+  line-height:1.15;
+  text-shadow:0 2px 4px rgba(0,0,0,.9), 0 0 14px rgba(0,0,0,.6);
 }
 
 .cinema-card .card-info{
-  font-size:.95em;
-  color:#ddd;
+  font-size:.85em;
+  color:#e8e8e8;
   font-weight:500;
+  line-height:1.35;
+  letter-spacing:.25px;
+  text-shadow:0 1px 3px rgba(0,0,0,.9);
 }
 
 /* Positions */
@@ -606,7 +802,20 @@ img {
   z-index:10;
   opacity:1;
   filter:blur(0);
+}
+
+/* The floating (center) card keeps its red frame as a masked pseudo-element
+   instead of a hard border: the top edge interpolates smoothly to
+   transparent over ~20px instead of ending in a hard cut. */
+.cinema-card.center::before{
+  content:'';
+  position:absolute;
+  inset:0;
   border:2px solid #ff003c;
+  border-radius:15px;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 20px, #000 100%);
+  mask-image:linear-gradient(to bottom, transparent 0%, #000 20px, #000 100%);
 }
 .cinema-card.center .card-content{
   opacity:1;
@@ -646,6 +855,12 @@ img {
   .cinema-card.right-2{ transform:translate3d(280px,0,-200px) scale(.7) rotateY(-25deg); }
   .cinema-card.left-1{ transform:translate3d(-160px,0,-100px) scale(.85) rotateY(15deg); }
   .cinema-card.left-2{ transform:translate3d(-280px,0,-200px) scale(.7) rotateY(25deg); }
+
+  /* keep overlay text compact on narrow cards so it never wraps into or
+     clips against the top bar */
+  .cinema-card .card-title{ font-size:1.3em; letter-spacing:.2px; }
+  .cinema-card .card-info{ font-size:.78em; line-height:1.3; }
+  .cinema-card .card-content{ left:14px; right:14px; bottom:12px; }
 }
 
 
@@ -1028,10 +1243,21 @@ img {
 /* ===== UPDATES ===== */
 .hud-updates{
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  column-gap: -0px;  
-  row-gap: 40px;     
+  /* Fixed 240px tracks + justify-content:center keeps the row of cards
+     symmetric. auto-fit with 1fr tracks created 7 empty tracks on wide
+     screens, so the 4 cards all piled up on the left. */
+  grid-template-columns: repeat(4, 240px);
+  justify-content: center;
   justify-items: center;
+  gap: 40px;
+}
+
+@media (max-width: 1199px) {
+  .hud-updates { grid-template-columns: repeat(2, 240px); }
+}
+
+@media (max-width: 560px) {
+  .hud-updates { grid-template-columns: 1fr; }
 }
 
 .hud-update-card{
@@ -1049,7 +1275,8 @@ img {
   transition:.45s cubic-bezier(.19,1,.22,1);
   transform-style:preserve-3d;
   height: 180px;    
-  width: 240px;             
+  width: 100%;
+  max-width: 240px;
   display: flex;
   flex-direction: column;
   justify-content: center;       
@@ -1452,17 +1679,12 @@ img {
 
 
 .hud-update-card.hud-update-wide{
-  width: calc(200% + 40px); 
+  /* The old `width: calc(200% + 40px)` rule pushed this card outside the
+     grid and caused horizontal overflow on narrow screens. */
+  grid-column: 1 / -1;
+  width: min(520px, 100%);
+  max-width: 520px;
   justify-self: center;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-
-.hud-update-card.hud-update-wide{
-  grid-column: 1 / -1;    
-  max-width: 520px;     
-  justify-self: center;    
 }
 
 /* ===== TRAILER MODAL ===== */
@@ -1689,31 +1911,23 @@ img {
 @media (max-width: 768px) {
 	/* 1. Navbar Container Padding & Height */
 	.navbar {
-		padding: 5px 12px;
-		height: 50px;
+		padding: 6px 14px;
+		height: 56px;
 	}
 
-	/* 2. Smaller Logo in Top Bar */
-	.logo img {
-		height: 45px; /* Scaled down from 85px */
-	}
-
-	/* 3. Navigation Links (HOME, ABOUT, DEMO, etc.) */
-	.navbar nav {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 6px;
-	}
-
-	.navbar a {
+	/* 2. Icon-only Laymon sprite in the top bar (icon stays 44px) */
+	.portfolio-link {
+		padding: 3px;
 		margin-left: 0;
-		font-size: 10px; /* Reduced font size so all items fit */
-		padding: 2px 4px;
 	}
 
-	.navbar nav a {
-		font-size: 10px;
+	.portfolio-link img { width: 44px; height: 44px; }
+
+	/* 3. Navigation is handled by the hamburger menu defined in the 900px block.
+	   The old inline 10px links gave ~10px tall tap targets, well under the
+       44px minimum, and wrapped into a cramped cluster on portrait screens. */
+	.navbar nav.open a {
+		font-size: 13px;
 	}
 
 	/* 4. General Element Scaling for Mobile */
@@ -1769,7 +1983,8 @@ img {
 
 	.hud-update-card.hud-update-wide {
 		width: 100%;
-		grid-column: span 2;
+		max-width: none;
+		grid-column: 1 / -1;
 	}
 
 	.hud-faq-question {
@@ -1789,4 +2004,51 @@ img {
 		width: 280px;
 		height: 280px;
 	}
+}
+
+/* ===== TOUCH SUPPORT =====
+   Hover-only affordances never fire on a phone, so interactive elements had
+   no visible feedback at all when tapped. */
+@media (hover: none) and (pointer: coarse) {
+	.card:active,
+	.hud-update-card:active,
+	.hud-control:active,
+	.lux-mail:active,
+	.character:active,
+	.cinema-card:active {
+		transform: scale(.97);
+	}
+
+	.btn.main:active { box-shadow: 0 0 26px #ff003c; }
+	.btn.ghost:active { box-shadow: 0 0 20px #ff003c; }
+
+	.modal-close { width: 44px; height: 44px; }
+	.hud-faq-question { min-height: 44px; }
+}
+
+/* ===== SMALL PHONE REFINEMENT ===== */
+@media (max-width: 480px) {
+	.hero { padding: 90px 18px 40px; }
+
+	.stats { gap: 22px; flex-wrap: wrap; }
+	.stats span { font-size: 28px; }
+
+	.carousel-container { height: 300px; }
+	.cinema-card { width: 250px; height: 145px; }
+	.cinema-card.right-1 { transform: translate3d(120px, 0, -100px) scale(.8)  rotateY(-14deg); }
+	.cinema-card.right-2 { transform: translate3d(210px, 0, -200px) scale(.65) rotateY(-22deg); }
+	.cinema-card.left-1  { transform: translate3d(-120px, 0, -100px) scale(.8)  rotateY(14deg); }
+	.cinema-card.left-2  { transform: translate3d(-210px, 0, -200px) scale(.65) rotateY(22deg); }
+
+	.hud-updates { grid-template-columns: 1fr; }
+	.hud-update-card.hud-update-wide { grid-column: 1; }
+
+	.modal-content { width: 94%; }
+	.video-container { height: 56vh; }
+
+	.omega-wrapper { height: 88vh; }
+	.artifact-container { width: 240px; height: 240px; }
+	.ring-mid  { inset: 22px; }
+	.ring-inner { inset: 44px; }
+	.singularity-vortex { inset: 70px; }
 }

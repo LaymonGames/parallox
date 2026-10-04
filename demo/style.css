@@ -1,3 +1,11 @@
+@font-face{
+  font-family:'Orbitron';
+  font-style:normal;
+  font-weight:400 900;
+  font-display:swap;
+  src:url('../assets/fonts/orbitron.woff2') format('woff2');
+}
+
 *{
   margin:0;
   padding:0;
@@ -104,4 +112,38 @@ footer{
   padding:20px;
   color:#666;
   font-size:13px;
+}
+
+/* ===== MOBILE =====
+   There were no mobile rules at all: `minmax(300px,1fr)` plus 60px padding
+   overflowed any phone narrower than ~420px. */
+@media (max-width: 768px) {
+  .header { padding: 40px 16px 24px; }
+  .header h1 { font-size: 28px; letter-spacing: 3px; }
+  .header p { font-size: 13px; letter-spacing: 1px; }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 24px 16px;
+  }
+
+  .overlay { padding: 18px; }
+  .overlay h2 { font-size: 20px; letter-spacing: 2px; }
+  .overlay span { font-size: 12px; }
+
+  footer { padding: 16px; font-size: 12px; }
+}
+
+/* Touch devices never trigger :hover, so give taps a visible state. */
+@media (hover: none) and (pointer: coarse) {
+  .card:active { transform: translateY(-6px) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

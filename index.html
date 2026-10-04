@@ -4,23 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PARALLOX – 2D RPG Game</title>
+<meta name="description" content="PARALLOX is a pixel-style 2D action RPG by Laymon Games where the hero is also the villain. Explore parallel timelines and dimensions. Free demo available on PC and Android.">
 <meta name="google-site-verification" content="google16d0f05aad171efc.html" />
-<link rel="icon" href="assets/LL.png" type="image/png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=nJjV-9JIPOn2Hc-MCeyc9_9iR6RdH3dqSZPH3w8D25kDyaJenE69zMy9wnF35g5NU5FhGIF4hYTxKi2SS31_ZeiOOdOSrRNCOmFUCJulWnokHapWFx-Rf3z2j7h3kr_L344rdVC7RXBZxSSKk1KQ5-CxSYB8cLd4ECfs4kw1hYJUVRW-jqBsDJwCdAlgSWaTjU5xDuKDvxCdSdaey-YtPNkSa1dLTEMPKGEnMzg8RGt7CcpEkK8fCeQpdPzPyued5FIGTauwiGZ9SK3vjUgNYd_hhAcZXsrIRBw3J9oMdteMHOIRC31Ycq7sCJ3FZMZ8DBciNJ1ZE4WNnZbMrJ_fOeZMLFVraKhY0UNRAJ0choACJasfE3b3vD9epvglOxR552eYh0r3VeLqaQBtNorfJyO5bVLQSxnaOwOuPjRiOl6P86BDj_cW3mI8st02bBR85zR1IQRturPpNI_K25rkNsBfyAS6mS6NWyefh3y2TQpSuMnHDd99BF6P1xhD7CMzn5OWPWmhgDBmUX_HSkxIRDyMH0mGTHMweB8gJs-LyvlK06T0YTIT2h1aKA90kKxwNPY51_VR_jokuIoqjn_nrA3FOoWCQSA-BG5SYan35bE-xrZdKOYcHfVF_IE9DP8SK9kXwpfqkjGSc-9XIiIBWw" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9wcm9kLWNoYXQta2ltaS50b3MtY24tYmVpamluZy52b2xjZXMuY29tL2tpbWktZnMvb2tjLzRocnBzaXJsZGdyN3kvb3V0cHV0L2luZGV4Lmh0bWw_WC1Ub3MtQWxnb3JpdGhtPVRPUzQtSE1BQy1TSEEyNTYmWC1Ub3MtQ3JlZGVudGlhbD1BS0xUWVRKbE5qZ3dNalkyWkRCa05ERmlZbUk1WVdOaVpEQmxabUZtWWpJelpUQSUyZjIwMjYwNzMwJTJmY24tYmVpamluZyUyZnRvcyUyZnJlcXVlc3QmWC1Ub3MtRGF0ZT0yMDI2MDczMFQxMDU5MzlaJlgtVG9zLUV4cGlyZXM9NTE4NDAwJlgtVG9zLVNpZ25hdHVyZT0yOTY5NjAwZTJhYmJjNWU3ODMyZmM0NGQ1NGEzNjUwYzgxMDk5YTJlZTgzNDQwZWFkNTM0NmUyOTZjYTEzNjkwJlgtVG9zLVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM2IlMjBmaWxlbmFtZSUyYSUzZFVURi04JTI3JTI3aW5kZXguaHRtbA"/></head>
 
-<body>
+<meta property="og:title" content="PARALLOX – 2D RPG Game">
+<meta property="og:description" content="The game where the hero is also the villain! Explore different timelines and dimensions.">
+<meta property="og:image" content="https://laymongames.github.io/parallox/assets/hero.webp">
+<meta property="og:url" content="https://laymongames.github.io/parallox/">
+
+<link rel="icon" href="assets/LL.png" type="image/png">
+
+<!-- Fonts are served from this repository: no external, render-blocking request. -->
+<link rel="preload" href="assets/fonts/orbitron.woff2" as="font" type="font/woff2">
+<link rel="preload" href="assets/fonts/share-tech-mono.woff2" as="font" type="font/woff2">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body id="top">
 
     <!-- ===== NAVBAR ===== -->
     <header class="navbar">
-        <div class="logo">
-            <img src="assets/LOGO.png" alt="PARALLOX Logo">
-        </div>
-        <nav>
-            <a href="#">HOME</a>
+        <!-- Order is deliberate: on desktop the hamburger is hidden so the
+             portfolio button sits where the logo used to be (top left) and the
+             nav links stay on the right. On mobile the nav collapses into a
+             drawer, leaving the hamburger on the left and the portfolio on the
+             right. -->
+        <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mainNav">
+            <span></span><span></span><span></span>
+        </button>
+
+        <a class="portfolio-link" href="https://laymongames.github.io/portfolio/" target="_blank" rel="noopener">
+            <!-- icon-only pixel sprite: text removed, size increased -->
+            <img src="assets/originals/laymon.png" alt="Laymon Games portfolio" width="44" height="44">
+        </a>
+
+        <nav id="mainNav">
+            <a href="#top">HOME</a>
             <a href="#hero">ABOUT</a>
             <a href="#omega-singularity">DEMO</a>
             <a href="#updates">UPDATES</a>
@@ -29,10 +48,11 @@
         </nav>
     </header>
 
-    <!-- ===== VIDEO INTRO CLEAN ===== -->
-    <section class="video-intro">
-        <video autoplay muted loop playsinline>
-            <source src="assets/background.mp4" type="video/mp4">
+    <!-- ===== VIDEO INTRO ===== -->
+    <!-- The poster paints instantly; the video is only fetched once it is on screen. -->
+    <section class="video-intro" id="video-intro">
+        <video id="introVideo" muted loop playsinline preload="none" poster="assets/video-poster.webp">
+            <source src="assets/background_opt.mp4" type="video/mp4">
         </video>
     </section>
 
@@ -53,13 +73,13 @@
                 going to ruin it..
             </p>
             <div class="buttons">
-                <a class="btn main" href="#omega-singularity" style="text-decoration: none;">Play Demo</a>
-                <a class="btn ghost" onclick="openTrailerModal()">Watch Trailer</a>
+                <a class="btn main" href="#omega-singularity">Play Demo</a>
+                <button class="btn ghost" type="button" onclick="openTrailerModal()">Watch Trailer</button>
             </div>
         </div>
 
         <div class="hero-img parallax">
-            <img class="char" src="assets/LL.png" alt="Parallox Character" fetchpriority="high" decoding="async">
+            <img class="char" src="assets/hero.webp" alt="Parallox Character" width="640" height="672" fetchpriority="high" decoding="async">
             <div class="glow"></div>
             <div class="dimension-ring"></div>
         </div>
@@ -75,79 +95,79 @@
 
         </p>
 
-        <div class="carousel-container">
+        <div class="carousel-container" id="carousel">
 
-            <div class="cinema-card" onclick="selectCinemaCard(0)">
+            <div class="cinema-card" onclick="selectCinemaCard(0)" role="button" tabindex="0" aria-label="Game moment 1">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot1.webp" class="poster" alt="Parallox gameplay screenshot 1" loading="lazy" decoding="async">
+                <img src="assets/Screenshot1.webp" class="poster" alt="Parallox gameplay screenshot 1" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title"></span>
                     <span class="card-info"></span>
                 </div>
             </div>
 
-            <div class="cinema-card" onclick="selectCinemaCard(1)">
+            <div class="cinema-card" onclick="selectCinemaCard(1)" role="button" tabindex="0" aria-label="Game moment 2">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot2.webp" class="poster" alt="Parallox gameplay screenshot 2" loading="lazy" decoding="async">
+                <img src="assets/Screenshot2.webp" class="poster" alt="Parallox gameplay screenshot 2" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title"></span>
                     <span class="card-info"></span>
                 </div>
             </div>
 
-            <div class="cinema-card" onclick="selectCinemaCard(2)">
+            <div class="cinema-card" onclick="selectCinemaCard(2)" role="button" tabindex="0" aria-label="Game moment 3: The Past">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot3.webp" class="poster" alt="Parallox gameplay screenshot 3" loading="lazy" decoding="async">
+                <img src="assets/Screenshot3.webp" class="poster" alt="Parallox gameplay screenshot 3" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title">THE PAST</span>
                     <span class="card-info">back when things were normal...</span>
                 </div>
             </div>
 
-            <div class="cinema-card" onclick="selectCinemaCard(3)">
+            <div class="cinema-card" onclick="selectCinemaCard(3)" role="button" tabindex="0" aria-label="Game moment 4: Parallox">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot4.webp" class="poster" alt="Parallox gameplay screenshot 4" loading="lazy" decoding="async">
+                <img src="assets/Screenshot4.webp" class="poster" alt="Parallox gameplay screenshot 4" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title">Parallox</span>
                     <span class="card-info">where the hero is also the villain</span>
                 </div>
             </div>
 
-            <div class="cinema-card" onclick="selectCinemaCard(4)">
+            <div class="cinema-card" onclick="selectCinemaCard(4)" role="button" tabindex="0" aria-label="Game moment 5: The Present">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot5.webp" class="poster" alt="Parallox gameplay screenshot 5" loading="lazy" decoding="async">
+                <img src="assets/Screenshot5.webp" class="poster" alt="Parallox gameplay screenshot 5" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title">THE PRESENT</span>
                     <span class="card-info">a broken relationship between a son and a father</span>
                 </div>
             </div>
 
-            <div class="cinema-card" onclick="selectCinemaCard(5)">
+            <div class="cinema-card" onclick="selectCinemaCard(5)" role="button" tabindex="0" aria-label="Game moment 6">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot6.webp" class="poster" alt="Parallox gameplay screenshot 6" loading="lazy" decoding="async">
+                <img src="assets/Screenshot6.webp" class="poster" alt="Parallox gameplay screenshot 6" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title"></span>
                     <span class="card-info"></span>
                 </div>
             </div>
 
-            <div class="cinema-card" onclick="selectCinemaCard(6)">
+            <div class="cinema-card" onclick="selectCinemaCard(6)" role="button" tabindex="0" aria-label="Game moment 7">
                 <div class="top-bar">
-                    <img src="assets/LL.png" class="logo" alt="" loading="lazy" decoding="async">
+                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
                 </div>
-                <img src="assets/Screenshot7.webp" class="poster" alt="Parallox gameplay screenshot 7" loading="lazy" decoding="async">
+                <img src="assets/Screenshot7.webp" class="poster" alt="Parallox gameplay screenshot 7" width="960" height="540" loading="lazy" decoding="async">
                 <div class="card-content">
                     <span class="card-title"></span>
                     <span class="card-info"></span>
@@ -194,7 +214,7 @@
         <div class="characters">
 
             <div class="character" onclick="showCharacter(this)" data-voice="assets/mikievoice.mp3">
-                <img src="assets/young_mike3-export.gif" alt="Mikie character animation" loading="lazy" decoding="async">
+                <img src="assets/young_mike3-export.gif" alt="Mikie character animation" width="64" height="64" loading="lazy" decoding="async">
                 <h3>MIKIE</h3>
                 <p class="desc">
                     Our smiley little boy! But don’t the let looks fool you, this boy has the bravery of a man inside him!
@@ -202,7 +222,7 @@
             </div>
 
             <div class="character" onclick="showCharacter(this)" data-voice="assets/mikevoice.mp3">
-                <img src="assets/mike.gif" alt="Mike character animation" loading="lazy" decoding="async">
+                <img src="assets/mike.gif" alt="Mike character animation" width="64" height="64" loading="lazy" decoding="async">
                 <h3>MIKE</h3>
                 <p class="desc">
                     Sounds familiar? Yes, that’s the same person on the left. It’s Mikie, but.. older?! Get ready to meet insanity in person! But watch out! Mike has an evil plan to destroy the town!
@@ -210,7 +230,7 @@
             </div>
 
             <div class="character" onclick="showCharacter(this)" data-voice="assets/waltervoice.mp3">
-                <img src="assets/walter.gif" alt="Walter character animation" loading="lazy" decoding="async">
+                <img src="assets/walter.gif" alt="Walter character animation" width="64" height="64" loading="lazy" decoding="async">
                 <h3>WALTER</h3>
                 <p class="desc">
                     Mike’s father, and the town’s local scientist. He became the most hated person in town after the incident happened..
@@ -264,19 +284,15 @@
     </section>
 
 
-    <!-- LIGHTBOX -->
-    <div id="lightbox" onclick="closeLightbox()">
-        <img id="lightbox-img">
-    </div>
-
     <!-- TRAILER MODAL -->
+    <!-- The iframe has no src until the modal is opened, so YouTube is never
+        downloaded on a normal page visit. -->
     <div id="trailerModal" class="modal-overlay" onclick="closeTrailerModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeTrailerModal()">✕</button>
+            <button class="modal-close" onclick="closeTrailerModal()" aria-label="Close trailer">✕</button>
             <div class="video-container">
-                <iframe width="100%"
+                <iframe id="trailerVideo" width="100%"
                         height="100%"
-                        src="https://www.youtube.com/embed/yNYdhM1FAas"
                         title="PARALLOX Trailer"
                         frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -373,28 +389,28 @@
 
         <div class="hud-updates">
 
-            <a href="https://www.youtube.com/@gamesbylaymon" target="_blank" class="hud-update-card">
+            <a href="https://www.youtube.com/@gamesbylaymon" target="_blank" rel="noopener" class="hud-update-card">
                 <div class="hud-icon">📺</div>
                 <h4>YouTube Channel</h4>
-                <span>Devlogs & trailers</span>
+                <span>Devlogs &amp; trailers</span>
             </a>
 
-            <a href="https://discord.com/invite/r2t59qmtWc" target="_blank" class="hud-update-card">
+            <a href="https://discord.com/invite/r2t59qmtWc" target="_blank" rel="noopener" class="hud-update-card">
                 <div class="hud-icon">👾</div>
                 <h4>Discord</h4>
                 <span>Join The Community!</span>
             </a>
 
-            <a href="https://gamejolt.com/games/Parallox/960336" target="_blank" class="hud-update-card">
+            <a href="https://gamejolt.com/games/Parallox/960336" target="_blank" rel="noopener" class="hud-update-card">
                 <div class="hud-icon">🎮</div>
                 <h4>GameJolt</h4>
-                <span>Downloads, community, & news</span>
+                <span>Downloads, community, &amp; news</span>
             </a>
 
-            <a href="https://laymon-games.itch.io/parallox" target="_blank" class="hud-update-card">
+            <a href="https://laymon-games.itch.io/parallox" target="_blank" rel="noopener" class="hud-update-card">
                 <div class="hud-icon">🔥</div>
                 <h4>Itch.io</h4>
-                <span>Downloads, community, & news</span>
+                <span>Downloads, community, &amp; news</span>
             </a>
 
             <a href="updates/index.html" class="hud-update-card hud-update-wide">
@@ -481,7 +497,6 @@
 
 
 
-
     <section id="contact" class="hud-section contact-luxury">
         <div class="hud-frame-glow"></div>
 
@@ -490,7 +505,7 @@
 
         <div class="lux-row">
 
-            <a href="#" class="lux-mail" data-email="gamesbylaymon@gmail.com">
+            <button type="button" class="lux-mail" data-email="gamesbylaymon@gmail.com">
                 <div class="mail-icon">📨</div>
                 <div class="mail-info">
                     <span class="site-title">LAYMON GAMES</span>
@@ -499,9 +514,9 @@
                 <div class="status-light"></div>
 
                 <div class="copy-msg">COPIED!</div>
-            </a>
+            </button>
 
-            <a href="#" class="lux-mail" data-email="youcefbenredjem23@gmail.com">
+            <button type="button" class="lux-mail" data-email="youcefbenredjem23@gmail.com">
                 <div class="mail-icon">💻</div>
                 <div class="mail-info">
                     <span class="site-title">THE WEB DEVELOPER</span>
@@ -510,7 +525,7 @@
                 <div class="status-light"></div>
 
                 <div class="copy-msg">COPIED!</div>
-            </a>
+            </button>
 
         </div>
 
@@ -519,9 +534,9 @@
             <p>your support is much more important than you think, fuel this project and help with keeping it alive!</p>
 
             <div class="action-buttons">
-                <a href="#" class="lux-btn donate" onclick="openDonateModal(); return false;">
+                <button type="button" class="lux-btn donate" onclick="openDonateModal()">
                     <span>❤ DONATE ❤</span>
-                </a>
+                </button>
             </div>
         </div>
     </section>
@@ -530,7 +545,7 @@
     <!-- DONATE MODAL -->
 <div id="donateModal" class="modal-overlay" onclick="closeDonateModal()">
   <div class="modal-content donate-content" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeDonateModal()">✕</button>
+    <button class="modal-close" onclick="closeDonateModal()" aria-label="Close donation dialog">✕</button>
 
     <h2 style="margin-bottom:20px;color:#ff003c;letter-spacing:3px;">
       SUPPORT THE PROJECT
@@ -540,15 +555,9 @@
       Help keep the development moving on!
     </p>
 
-    <!-- Replace ONLY YOUR_PAYPAL_DONATE_BUTTON_ID with the ID from your PayPal Donate button. -->
-    <div>
-    <style>.pp-MDJMAHXZ32GP8{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-    <form action="https://www.paypal.com/ncp/payment/MWC77EFXGXZXU" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
-        <input class="pp-MDJMAHXZ32GP8" type="submit" value="Donate" />
-        <img src=https://www.paypalobjects.com/images/Debit_Credit.svg alt="cards" />
-        <section style="font-size: 0.75rem;"> Powered by PayPal</section>
-    </form>
-    </div>
+    <a class="paypal-donate-link" href="https://www.paypal.com/ncp/payment/MWC77EFXGXZXU" target="_blank" rel="noopener">
+        Donate
+    </a>
 
     <p class="donate-note">
       You’ll be securely redirected to PayPal to complete your donation.
@@ -557,19 +566,13 @@
 </div>
 
 
-
     <!-- ===== FOOTER ===== -->
     <footer>
         <p>© 2026 Laymon Games – All Rights Reserved</p>
-        <p>Developed by Youcef Benredjem</p>
+        <p>Developed by Youcef Benredjem (ft. Laymon Games)</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 
 </body>
 </html>
-
-
-
-
-
