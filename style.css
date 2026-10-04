@@ -169,6 +169,7 @@ html {
    everything else is frozen instead of being composited for nothing. */
 .hero:not(.in-view) .char,
 .hero:not(.in-view) .dimension-ring,
+.hero:not(.in-view) .glow,
 .omega-wrapper:not(.in-view) .nebula-layer,
 .omega-wrapper:not(.in-view) .star-dust,
 .omega-wrapper:not(.in-view) .god-rays,
@@ -532,27 +533,37 @@ footer{
   animation: float 4s ease-in-out infinite;
 }
 
-/* DIMENSION RING — the red circle around the floating LL. Its top arc is
-   the hard red edge sitting between the video and the floating LL. Instead
-   of a hard line, the border now interpolates smoothly to transparent at
-   the top (a gradient mask). The ring is a perfect circle, so the old
-   spin rotation had no visible effect — removed so the fade stays fixed
-   at the top. */
+/* GLOW */
+.glow{
+  position:absolute;
+  width:360px;
+  height:360px;
+  background:radial-gradient(circle, #ff003c55, transparent 70%);
+  filter:blur(40px);
+  z-index:1;
+}
+
+/* DIMENSION RING — the red circle around the floating LL. Restored to its
+   original full shape: a complete, evenly-opaque circle (2px border at 60%
+   opacity, reading soft, not hard) with the original slow spin. */
 .dimension-ring{
   position:absolute;
   width:420px;
   height:420px;
   border:2px solid #ff003c;
   border-radius:50%;
+  animation: spin 10s linear infinite;
   opacity:.6;
-  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 25%, #000 100%);
-  mask-image:linear-gradient(to bottom, transparent 0%, #000 25%, #000 100%);
 }
 
 /* ANIMATIONS */
 @keyframes float{
   0%,100%{transform:translateY(0)}
   50%{transform:translateY(-15px)}
+}
+@keyframes spin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
 }
 
 /* Pixel art needs crisp nearest-neighbour upscaling. Applying `pixelated` to
@@ -1887,6 +1898,10 @@ footer{
     }
     .hero-img .char {
         width: 220px;
+    }
+    .glow {
+        width: 260px;
+        height: 260px;
     }
     .dimension-ring {
         width: 280px;
