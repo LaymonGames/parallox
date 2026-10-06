@@ -16,9 +16,11 @@
 <meta property="og:url" content="https://laymongames.github.io/parallox/">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- 3 KB icon instead of the 105 KB LL.png, plus a real touch icon. -->
-<link rel="icon" href="assets/favicon.png" type="image/png" sizes="any">
-<link rel="apple-touch-icon" href="assets/favicon.png">
+<!-- The LL as the site icon. logo-mark.webp is the same 3D L as hero.webp
+     at 1.9 KB (vs 105 KB for LL.png), and is already fetched by the
+     screenshot carousel, so the icon costs nothing extra. -->
+<link rel="icon" href="assets/logo-mark.webp" type="image/webp" sizes="any">
+<link rel="apple-touch-icon" href="assets/logo-mark.webp">
 
 <!-- Both faces ship with the repository: no external request, no render block. -->
 <link rel="preload" href="assets/fonts/orbitron.woff2" as="font" type="font/woff2" crossorigin>
@@ -168,7 +170,7 @@
   <section class="section section--cinema" id="media">
     <div class="shell">
       <header class="section__head">
-        <h2 class="section__title" id="media-heading">GAME MOMENTS</h2>
+        <h2 class="section__title" id="media-heading"><span class="blue">GAME</span> <span class="red">MOMENTS</span></h2>
         <p class="section__sub">
           Mike is our main character, he grows up in a harsh environment and slowly loses his mind.<br>
           Filled with hate, he's now seeking revenge. One day, an incurable illness strikes the town, and Mike goes into a coma.<br>
@@ -245,7 +247,7 @@
   <section class="section section--dark" id="about">
     <div class="shell">
       <header class="section__head">
-        <h2 class="section__title">WELCOME TO A PARALLEL REALITY</h2>
+        <h2 class="section__title">WELCOME TO A <span class="blue">PARALLEL</span> REALITY</h2>
         <p class="section__sub">
           Every dimension has a version of you, each version is special in its own way!
         </p>
@@ -509,7 +511,7 @@
   <section class="section section--hud section--contact" id="contact">
     <div class="shell">
       <header class="section__head">
-        <h2 class="section__title">CONTACT</h2>
+        <h2 class="section__title"><span class="red">CONTACT</span></h2>
         <p class="section__sub">CLICK TO COPY THE EMAIL</p>
       </header>
 
@@ -538,9 +540,10 @@
       <div class="support">
         <h3>LIKE WHAT I DO?</h3>
         <p>your support is much more important than you think, fuel this project and help with keeping it alive!</p>
-        <button type="button" class="btn btn--primary" data-open-donate>
+        <button type="button" class="btn btn--primary btn--donate" data-open-donate>
           <svg aria-hidden="true"><use href="#i-heart"/></svg>
-          DONATE
+          <span>DONATE</span>
+          <svg aria-hidden="true"><use href="#i-heart"/></svg>
         </button>
       </div>
     </div>
@@ -551,7 +554,7 @@
 <footer class="footer">
   <div class="shell">
     <p>© 2026 Laymon Games – All Rights Reserved</p>
-    <p>Developed by Youcef Benredjem (ft. Laymon Games)</p>
+    <p>Developed by Youcef Benredjem and Laymon Games</p>
   </div>
 </footer>
 

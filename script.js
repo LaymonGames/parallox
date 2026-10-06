@@ -218,9 +218,11 @@
 
   /* =====================================================================
      INTRO VIDEO
-     The clip is 3840x2160 — roughly 1.4 MB and a very expensive decode on
-     anything that isn't a recent desktop. It is only ever attached on a
-     capable device, and only once the hero is actually reached.
+     The clip is 3840x2160 — roughly 1.4 MB and a heavy decode. It plays on
+     phones too, as it always did; the safety valve is the quality tier,
+     not the pointer type. `data-fx="lite"` (set before first paint by the
+     inline head script for Save-Data, <=4 cores, <=4 GB, or reduced motion)
+     is what stops it loading on a device that cannot afford it.
      ===================================================================== */
   var introVideo = document.getElementById('introVideo');
   var videoStop = function () {};
@@ -228,7 +230,7 @@
   function stopVideo() { videoStop(); }
 
   if (introVideo) {
-    if (!fxOn() || !finePtr || !introVideo.getAttribute('data-src')) {
+    if (!fxOn() || !introVideo.getAttribute('data-src')) {
       /* The layered CSS wash behind it becomes the hero's permanent look. The
          element is removed outright, so there is no <source> to fetch, no
          decoder allocated and no decoder thread waking up on every frame. */
@@ -405,10 +407,16 @@
        content and there is nothing to activate. Only here — where clicking
        a card moves the carousel — are they promoted to controls. */
     var coverflow = fxOn() && finePtr && window.matchMedia('(min-width: 760px)').matches;
-    if (!coverflow) return;
-
     var index = 3;
     var n = shots.length;
+
+    if (!coverflow) {
+      /* Filmstrip: start on the same middle screenshot desktop does, so the
+         two modes don't open on different content. */
+      var focus = shots[Math.min(index, n - 1)];
+      stage.scrollLeft = Math.max(0, focus.offsetLeft - (stage.clientWidth - focus.offsetWidth) / 2);
+      return;
+    }
 
     shots.forEach(function (shot) {
       shot.setAttribute('role', 'button');
