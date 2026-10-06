@@ -1,7 +1,21 @@
-/* ===== SELF-HOSTED FONTS =====
-   Previously the page blocked rendering on a request to fonts.googleapis.com,
-   and 'Share Tech Mono' (used by the HUD/omega section) was never loaded at all.
-   Both faces now ship with the repository: zero external requests, no render block. */
+/* =====================================================================
+   PARALLOX — stylesheet
+
+   PERFORMANCE CONTRACT (read before editing)
+   ---------------------------------------------------------------------
+   1. Nothing here animates a property the compositor cannot handle
+      (background-position, width/height, box-shadow, filter on the
+      element itself). Motion is transform + opacity only.
+   2. Expensive effects (backdrop-filter, glows, hover 3D) are *opt-in*
+      behind `@media (hover:hover)` and `html[data-fx="full"]`. They are
+      never switched off later by a media query — the previous stylesheet
+      did that and lost every override to the cascade, leaving 25
+      backdrop-filter elements live on phones.
+   3. Decorative layers are frozen while their section is off screen
+      (`.in-view` is toggled by script.js).
+   ===================================================================== */
+
+/* ── FONTS (self-hosted: no external request, no render block) ───── */
 @font-face{
   font-family:'Orbitron';
   font-style:normal;
@@ -9,7 +23,6 @@
   font-display:swap;
   src:url('assets/fonts/orbitron.woff2') format('woff2');
 }
-
 @font-face{
   font-family:'Share Tech Mono';
   font-style:normal;
@@ -18,2049 +31,1244 @@
   src:url('assets/fonts/share-tech-mono.woff2') format('woff2');
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Orbitron',sans-serif;
+/* ── TOKENS ───────────────────────────────────────────────────────── */
+:root{
+  /* palette */
+  --void:#05070e;
+  --void-deep:#03050b;
+  --surface:#0b1018;
+  --surface-2:#101724;
+  --line:rgba(255,255,255,.09);
+  --line-strong:rgba(255,255,255,.16);
+
+  --ink:#f2f5ff;
+  --muted:#a6b0c6;   /* 7.4:1 on --void — passes AA at any size */
+  --faint:#7b869d;   /* 4.9:1 — AA for large/secondary text only */
+
+  --red:#ff2d55;
+  /* Solid fills that carry white text. #ff2d55 only reaches 3.65:1 against
+     white, which fails AA for button-sized type; this is the same hue taken
+     down just far enough to clear 4.5:1 with margin. */
+  --red-solid:#d9103c;
+  --red-soft:rgba(255,45,85,.14);
+  --cyan:#22e0ff;
+  --green:#25f5a8;
+
+  /* type */
+  --display:'Orbitron','Segoe UI',system-ui,sans-serif;
+  --mono:'Share Tech Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --body:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+
+  --fs-h2:clamp(1.7rem,5.2vw,3.1rem);
+  --fs-h3:clamp(1.05rem,2.4vw,1.35rem);
+  --fs-lede:clamp(1rem,2.1vw,1.15rem);
+  --fs-body:clamp(.95rem,1.6vw,1.02rem);
+  --fs-small:.82rem;
+  --fs-label:.7rem;
+
+  /* space + shape */
+  --pad-x:clamp(1.25rem,5vw,3.5rem);
+  --section-y:clamp(3.5rem,9vw,7rem);
+  --shell:1200px;
+  --r-sm:8px;
+  --r-md:14px;
+  --r-lg:22px;
+  --r-pill:999px;
+  --nav-h:64px;
+  /* clearance between the fixed navbar and whatever an anchor scrolled to */
+  --anchor-gap:20px;
+
+  --ease:cubic-bezier(.19,1,.22,1);
+
+  color-scheme:dark;
+}
+
+/* ── RESET ────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html{
+  -webkit-text-size-adjust:100%;
+  background:var(--void);
+}
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
 }
 
 body{
-  background:#0b0f1a;
-  color:#fff;
-}
-body {
-    overflow-x: hidden;
-    background: #0b0f1a;
-}
-
-/* NAV */
-.navbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 60px;
-  height:70px;
-  position:fixed;
-  top:0;
-  width:100%;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(10px);
-  z-index:100;
+  font-family:var(--body);
+  font-size:var(--fs-body);
+  line-height:1.65;
+  color:var(--muted);
+  background:var(--void);
+  overflow-x:clip;          /* clip, not hidden — no scroll container side effects */
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
 }
 
-.navbar nav a{
-  line-height:1;
-  font-size:15px;
+img,svg,video{display:block;max-width:100%}
+img{height:auto}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+ul,ol{list-style:none}
+h1,h2,h3,h4{font-family:var(--display);color:var(--ink);font-weight:800;line-height:1.08;letter-spacing:-.01em;text-wrap:balance}
+p{text-wrap:pretty}
+strong{color:var(--ink);font-weight:700}
+kbd{font-family:var(--mono)}
+
+:where(a,button,[tabindex]):focus-visible{
+  outline:2px solid var(--red);
+  outline-offset:3px;
+  border-radius:4px;
 }
 
-.navbar a{
-  display:inline-block;
-  margin-left:25px;
-  padding:6px 6px;
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+svg{width:1.15em;height:1.15em;flex:none}
+
+.skip-link{
+  position:fixed;top:8px;left:8px;z-index:400;
+  transform:translateY(-160%);
+  background:var(--red-solid);color:#fff;
+  padding:.7rem 1.1rem;border-radius:var(--r-sm);
+  font-family:var(--mono);font-size:var(--fs-small);letter-spacing:.08em;
+}
+.skip-link:focus{transform:none}
+
+.shell{width:min(var(--shell),100% - var(--pad-x) * 2);margin-inline:auto}
+
+/* Anchor targets stop exactly one navbar-height + gap below the viewport top.
+   script.js overrides this with a computed scroll for in-page links so the
+   landing position is exact even while content-visibility is resolving. */
+section[id],[id]{scroll-margin-top:calc(var(--nav-h) + var(--anchor-gap))}
+
+/* =====================================================================
+   NAVBAR
+   ===================================================================== */
+.nav{
+  position:fixed;inset:0 0 auto 0;z-index:100;
+  height:var(--nav-h);
+  display:flex;align-items:center;gap:clamp(.6rem,1.6vw,1.25rem);
+  padding-inline:clamp(.75rem,3vw,1.75rem);
+  background:rgba(5,7,14,.82);
+  border-bottom:1px solid var(--line);
+}
+html[data-fx="full"] .nav{backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%)}
+html[data-fx="lite"] .nav{background:rgba(5,7,14,.96)}
+
+/* scroll progress: one composited scaleX, written from a passive listener */
+.nav__progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--line);overflow:hidden}
+.nav__progress i{
+  display:block;height:100%;width:100%;
+  background:linear-gradient(90deg,var(--red),#a855f7 55%,var(--cyan));
+  transform:scaleX(0);transform-origin:0 50%;
+  will-change:transform;
+}
+
+.nav__toggle{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  width:44px;height:44px;flex:none;
+  border:1px solid rgba(255,45,85,.32);border-radius:var(--r-sm);
+  transition:border-color .2s,background-color .2s;
+}
+.nav__toggle span{display:block;width:20px;height:2px;background:var(--ink);transition:transform .25s var(--ease),opacity .18s}
+.nav__toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav__toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.nav__toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* The Laymon Games portfolio link — back where it started: top-left on
+   desktop, immediately after the hamburger on mobile. */
+.brand{
+  display:flex;align-items:center;gap:.55rem;
+  margin-right:auto;
+  padding:.25rem .7rem .25rem .3rem;
+  border:1px solid rgba(255,45,85,.28);
+  border-radius:var(--r-md);
   text-decoration:none;
-  color:#fff;
-  transition:.3s;
+  transition:transform .3s var(--ease),border-color .25s,box-shadow .3s;
 }
-.navbar a:hover{color:#ff003c;}
-.navbar a:focus-visible{outline:2px solid #ff003c;outline-offset:2px;}
-
-/* Hamburger — only ever shown on touch/narrow screens. */
-.nav-toggle{
-  display:none;
-  align-items:center;
-  justify-content:center;
-  gap:5px;
-  width:44px;
-  height:44px;
-  background:transparent;
-  border:1px solid rgba(255,0,60,.35);
-  border-radius:8px;
-  cursor:pointer;
-  flex-direction:column;
-}
-.nav-toggle span{
-  display:block;
-  width:20px;
-  height:2px;
-  background:#fff;
-  transition:.25s;
-}
-.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg);}
-.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;}
-.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
-
-html {
-  scroll-behavior: smooth;
-}
-
-/* ===== MOTION / MOBILE PERFORMANCE OVERRIDES ===== */
-@media (prefers-reduced-motion: reduce) {
-	*, *::before, *::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-		scroll-behavior: auto !important;
-	}
-}
-
-@media (max-width: 768px) {
-	/* these ambient layers animate background-position/gradients every frame,
-	   which can't be GPU-accelerated the way transform/opacity can — that's a
-	   full-page repaint cost on every scroll frame for very little payoff on
-	   a small screen. Freeze them instead of turning them off completely. */
-	.god-rays,
-	.star-dust,
-	.nebula-layer,
-	.hud-frame-glow {
-		animation: none;
-	}
-
-	/* backdrop-filter is one of the most expensive properties on mobile GPUs,
-	   especially on a fixed navbar that has to re-blur on every scroll frame. */
-	.navbar,
-	.hud-control,
-	.hud-terminal,
-	.hud-support,
-	.hud-faq-item,
-	.hud-update-card,
-	.lux-mail {
-		backdrop-filter: none;
-		-webkit-backdrop-filter: none;
-	}
-	.navbar {
-		background: rgba(0, 0, 0, 0.85);
-	}
-
-	/* animating filter:blur() is expensive to repaint; drop it on mobile and
-	   keep just the cheap transform/opacity part of the carousel transition */
-	.cinema-card {
-		transition: transform 0.5s ease, opacity 0.5s ease;
-	}
-	.cinema-card.left-1,
-	.cinema-card.left-2,
-	.cinema-card.right-1,
-	.cinema-card.right-2 {
-		filter: none;
-	}
-}
-
-/* Skip layout/paint work for sections that are offscreen until they're
-   about to scroll into view. contain-intrinsic-size is a placeholder
-   estimate here — tune per-section once real content/heights are known,
-   or the scrollbar can jump slightly as sections resolve their true size. */
-.section,
-.hud-section,
-.cinema-section,
-.contact-luxury {
-	content-visibility: auto;
-	contain-intrinsic-size: auto 900px;
-}
-
-.omega-wrapper {
-	content-visibility: auto;
-	contain-intrinsic-size: auto 100vh;
-}
-
-/* ===== VIEWPORT-AWARE ANIMATION GATING =====
-   The ambient layers (nebula blur, star drift, god rays, HUD glow, the three
-   energy rings) tick every frame even when their section is nowhere near the
-   screen. script.js adds .in-view to a section only while it is on screen, so
-   everything else is frozen instead of being composited for nothing. */
-.hero:not(.in-view) .char,
-.hero:not(.in-view) .dimension-ring,
-.hero:not(.in-view) .glow,
-.omega-wrapper:not(.in-view) .nebula-layer,
-.omega-wrapper:not(.in-view) .star-dust,
-.omega-wrapper:not(.in-view) .god-rays,
-.omega-wrapper:not(.in-view) .ring-outer,
-.omega-wrapper:not(.in-view) .ring-mid,
-.omega-wrapper:not(.in-view) .ring-inner,
-.omega-wrapper:not(.in-view) .vortex-energy,
-.omega-wrapper:not(.in-view) .event-horizon-flash,
-.hud-section:not(.in-view) .hud-frame-glow {
-	animation: none;
-}
-
-/* ===== MOBILE NAVIGATION ===== */
-@media (max-width: 900px) {
-	.navbar {
-		padding: 8px 16px;
-		padding-left: max(16px, env(safe-area-inset-left));
-		padding-right: max(16px, env(safe-area-inset-right));
-	}
-
-	.portfolio-link {
-		padding: 3px;
-		margin-left: 0;
-	}
-
-	.portfolio-link img { width: 44px; height: 44px; }
-
-	.nav-toggle { display: flex; }
-
-	/* The drawer always lives in the tree below the fixed bar; it fades and
-	   drops in when open instead of popping in via display toggling, so the
-	   rows can animate their own staggered entrance. */
-	.navbar nav {
-		display: flex;
-		flex-direction: column;
-		position: absolute;
-		top: 100%;
-		left: 0;
-		right: 0;
-	 background: rgba(0, 0, 0, 0.92);
-		border-top: 1px solid rgba(255, 0, 60, 0.25);
-		padding: 4px 16px 14px;
-		opacity: 0;
-		visibility: hidden;
-		transform: translateY(10px);
-		transform-origin: top;
-		transition: opacity .22s ease, transform .26s cubic-bezier(.19, 1, .22, 1), visibility 0s linear .22s;
-	}
-
-	.navbar nav.open {
-		opacity: 1;
-		visibility: visible;
-		transform: translateY(0);
-		transition: opacity .22s ease, transform .26s cubic-bezier(.19, 1, .22, 1), visibility 0s;
-	}
-
-	/* 44px tall rows: real tap targets. Staggered drop-in while the drawer
-	   opens; plain fade-out while it closes (no per-row close delay). */
-	.navbar nav a {
-		margin: 0;
-		padding: 13px 10px;
-		font-size: 14px;
-		letter-spacing: 1.1px;
-		opacity: 0;
-		transform: translateY(12px);
-		transition: opacity .28s ease, transform .34s cubic-bezier(.19, 1, .22, 1), background-color .15s ease, color .15s ease;
-	}
-	.navbar nav.open a {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	.navbar nav.open a:nth-child(1) { transition-delay: .04s; }
-	.navbar nav.open a:nth-child(2) { transition-delay: .07s; }
-	.navbar nav.open a:nth-child(3) { transition-delay: .10s; }
-	.navbar nav.open a:nth-child(4) { transition-delay: .13s; }
-	.navbar nav.open a:nth-child(5) { transition-delay: .16s; }
-	.navbar nav.open a:nth-child(6) { transition-delay: .19s; }
-
-	/* Press feedback on the section name buttons: a quick pop with a red
-	   flash that settles back, then the drawer fades out on top of it. The
-	   .nav-press class is added in script.js and stripped when the keyframes
-	   finish. (Keyed off nav, not nav.open, because tapping a link closes the
-	   drawer on the same click.) */
-	.navbar nav a.nav-press {
-		animation: navPress .35s cubic-bezier(.3, .9, .25, 1.35) both;
-	}
-	@keyframes navPress {
-		0%   { transform: translateY(0) scale(1);      background: transparent;    color: #fff; }
-		35%  { transform: translateY(3px) scale(.92);  background: rgba(255, 0, 60, .45); color: #ff003c; }
-		100% { transform: translateY(0) scale(1);      background: transparent;    color: #fff; }
-	}
-	/* Phone browsers paint their default blue tap-highlight over links on
-		press. Force the section-name buttons to flash red on touch as well
-		so no blue ever leaks through. */
-	.navbar nav.open a:active {
-		background: rgba(255, 0, 60, .45);
-		color: #ff003c;
-	}
-	.navbar nav.open a:focus {
-		outline: 2px solid #ff003c;
-		outline-offset: 2px;
-	}
-}
-
-
-/* PORTFOLIO BUTTON — icon-only pixel sprite (replaces the old navbar logo).
-   The Laymon sprite is pixel art, so it is drawn with pixelated upscaling,
-   shown larger (44px), and carries no text. */
-.portfolio-link{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:3px;
-  border:1px solid rgba(255,0,60,.35);
-  border-radius:10px;
-  background:rgba(12,14,30,.55);
-  color:#fff;
-  text-decoration:none;
-  transition:.3s ease;
-  box-shadow:0 0 14px rgba(174,0,255,.18);
-}
-
-.portfolio-link img{
-  width:44px;
-  height:44px;
+.brand img{
+  width:38px;height:38px;flex:none;
   image-rendering:pixelated;
-  filter:drop-shadow(0 0 8px #ae00ff66);
-  transition:transform .3s ease, filter .3s ease;
+  filter:drop-shadow(0 0 7px rgba(168,85,247,.45));
+  transition:transform .3s var(--ease);
 }
-
-.portfolio-link:hover{
-  color:#ff003c;
-  border-color:#ff003c;
-  box-shadow:0 0 20px rgba(255,0,60,.35);
-  transform:translateY(-2px);
+.brand__word{
+  font-family:var(--display);font-weight:900;font-size:.74rem;letter-spacing:.14em;
+  color:var(--ink);white-space:nowrap;
 }
+@media (hover:hover){html[data-fx="full"] .brand:hover{transform:translateY(-2px);border-color:var(--red);box-shadow:0 0 20px rgba(255,45,85,.3)}}
+@media (hover:none){.brand:active{transform:scale(.98)}}
 
-.portfolio-link:hover img{
-  transform:scale(1.08);
-  filter:drop-shadow(0 0 12px #a200ff);
+.nav nav{display:flex;align-items:center;gap:.1rem}
+.nav nav a{
+  position:relative;
+  padding:.6rem .8rem;
+  font-family:var(--mono);font-size:.78rem;letter-spacing:.13em;
+  color:var(--muted);
+  transition:color .2s;
 }
+.nav nav a::after{
+  content:'';position:absolute;left:.8rem;right:.8rem;bottom:.34rem;height:2px;
+  background:var(--red);
+  transform:scaleX(0);transform-origin:0 50%;
+  transition:transform .3s var(--ease);
+}
+.nav nav a:hover,.nav nav a:focus-visible{color:var(--ink)}
+.nav nav a:hover::after,.nav nav a:focus-visible::after{transform:scaleX(1)}
 
-.portfolio-link:focus-visible{outline:2px solid #ff003c;outline-offset:2px;}
+/* mobile drawer */
+@media (max-width:899px){
+  .nav{gap:.5rem}
+  .nav__toggle{display:flex}
+  .brand{margin-right:0}
+  .nav nav{
+    position:absolute;top:100%;left:0;right:0;
+    flex-direction:column;align-items:stretch;gap:0;
+    padding:6px clamp(.75rem,3vw,1.75rem) 12px;
+    background:rgba(5,7,14,.97);
+    border-bottom:1px solid var(--line);
+    transform:translateY(-8px);
+    opacity:0;visibility:hidden;
+    transition:opacity .2s ease,transform .28s var(--ease),visibility 0s linear .24s;
+  }
+  .nav nav.open{opacity:1;visibility:visible;transform:none;transition:opacity .2s ease,transform .28s var(--ease),visibility 0s}
+  .nav nav a{
+    padding:13px 10px;margin:0;font-size:.82rem;
+    border-bottom:1px solid var(--line);
+  }
+  .nav nav a::after{display:none}
+  .nav nav.open a{animation:navIn .3s var(--ease) both}
+  .nav nav.open a:nth-child(1){animation-delay:.03s}
+  .nav nav.open a:nth-child(2){animation-delay:.06s}
+  .nav nav.open a:nth-child(3){animation-delay:.09s}
+  .nav nav.open a:nth-child(4){animation-delay:.12s}
+  .nav nav.open a:nth-child(5){animation-delay:.15s}
+  .nav nav.open a:nth-child(6){animation-delay:.18s}
+  .nav nav a:active{background:var(--red-soft);color:var(--ink)}
+}
+@keyframes navIn{from{opacity:0;transform:translate3d(0,-8px,0)}to{opacity:1;transform:none}}
 
+@media (min-width:900px){.nav__toggle{display:none}}
 
-/* HERO */
+/* =====================================================================
+   BUTTONS
+   ===================================================================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+  min-height:48px;padding:.85rem 1.6rem;
+  font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.12em;
+  border-radius:var(--r-pill);
+  border:1px solid transparent;
+  transition:transform .3s var(--ease),background-color .25s,border-color .25s,color .25s;
+}
+.btn svg{width:1.05em;height:1.05em}
+.btn--primary{background:var(--red-solid);color:#fff}
+.btn--ghost{border-color:rgba(255,45,85,.6);color:var(--red);background:rgba(255,45,85,.05)}
+.btn--wide{width:100%}
+
+@media (hover:hover) and (pointer:fine){
+  html[data-fx="full"] .btn--primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,45,85,.45)}
+  html[data-fx="full"] .btn--ghost:hover{transform:translateY(-2px);background:rgba(255,45,85,.12);border-color:var(--red);box-shadow:0 10px 30px rgba(255,45,85,.25)}
+}
+@media (hover:none){.btn:active{transform:scale(.97)}}
+
+/* =====================================================================
+   HERO — the intro clip is the background layer, not a 120vh block
+   ===================================================================== */
 .hero{
+  position:relative;
   min-height:100vh;
-  display:flex;
+  min-height:100svh;
+  display:grid;
   align-items:center;
-  padding:100px 60px;
-  /* assets/bg.jpg does not exist in the repository — this rule 404s on every
-     page load. Replaced with an equivalent in-CSS gradient so nothing is fetched. */
+  gap:clamp(1rem,3vw,2rem);
+  padding:calc(var(--nav-h) + clamp(2rem,7vh,4rem)) var(--pad-x) clamp(3.5rem,9vh,5.5rem);
+  isolation:isolate;
+  overflow:clip;
+  background:var(--void);
+}
+@media (min-width:900px){
+  .hero{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)}
+}
+
+.hero__bg{position:absolute;inset:0;z-index:-2;background:var(--void)}
+.hero__bg video{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease}
+/* the class is added by script.js once real frames are on screen */
+.hero__bg video.ready{opacity:.62}
+
+/* Permanent backdrop: the intended look before, or entirely without, the
+   video. Painted once — nothing here animates. */
+.hero__bg::before{
+  content:'';position:absolute;inset:0;
   background:
-    radial-gradient(1200px 600px at 70% 20%, rgba(255,0,60,.10), transparent 60%),
-    radial-gradient(900px 500px at 20% 80%, rgba(0,243,255,.07), transparent 60%),
-    #0b0f1a;
+    radial-gradient(56% 46% at 68% 32%,rgba(255,45,85,.34),transparent 70%),
+    radial-gradient(50% 44% at 20% 78%,rgba(34,224,255,.20),transparent 72%),
+    radial-gradient(95% 75% at 50% 46%,#0b1223,#05070e 76%);
+}
+/* Legibility layer over whatever is behind it. */
+.hero__scrim{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to top,rgba(5,7,14,.94) 0%,rgba(5,7,14,.62) 38%,rgba(5,7,14,.34) 100%),
+    radial-gradient(75% 65% at 32% 52%,rgba(5,7,14,.6),transparent 70%);
+}
+/* faint technical grid, masked so it dissolves at the edges */
+.hero__grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(75% 60% at 50% 45%,#000,transparent 78%);
+  mask-image:radial-gradient(75% 60% at 50% 45%,#000,transparent 78%);
 }
 
-.hero-text{
-  width:50%;
+.hero__inner{
+  position:relative;z-index:2;
+  width:100%;max-width:640px;margin-inline:0;
+  /* lets the display type scale to its column instead of to the viewport —
+     "PARALLOX" is eight very wide glyphs and will not fit on a phone */
+  container-type:inline-size;
 }
 
-.hero-text h2{
-  color:#ff003c;
-  letter-spacing:2px;
+.hero__kicker{
+  font-size:clamp(.72rem,2.4vw,.85rem);
+  letter-spacing:.3em;
+  color:var(--red);
+  margin-bottom:1.1rem;
 }
 
-.hero-text h1{
-  font-size:60px;
+.hero__title{
+  font-size:clamp(2.05rem,11.5vw,5.5rem);
+  font-weight:900;
+  letter-spacing:-.02em;
+  line-height:.92;
+  margin-bottom:1.4rem;
+}
+.hero__title .blue{color:#2f8bff;text-shadow:0 0 34px rgba(47,139,255,.45)}
+.hero__title .red{color:var(--red);text-shadow:0 0 34px rgba(255,45,85,.5)}
+@supports (container-type:inline-size){
+  .hero__title{font-size:min(clamp(1.5rem,11vw,5.5rem),11.5cqi)}
 }
 
-.para-blue{
-  color:#0075f9;
-}
+.hero__lede{font-size:var(--fs-lede);max-width:46ch;margin-bottom:2rem}
+.hero__cta{display:flex;flex-wrap:wrap;gap:.75rem}
 
-.llox-red{
-  color:#ff003c;
-}
+/* ── The floating LL ────────────────────────────────────────────────
+   assets/hero.webp is 640x672 and fully transparent outside the artwork
+   (measured: corners alpha 0, artwork spans rows 0-646). So there is
+   nothing to crop and nothing to mask — an earlier `overflow:hidden` crop
+   box was clipping the top of the character on every frame of the float.
 
-.hero-text p{
-  margin:20px 0;
-  line-height:1.7;
-  color:#ccc;
-}
-
-.buttons .btn{
-  display:inline-block;
-  padding:12px 28px;
-  margin-right:15px;
-  border-radius:30px;
-  cursor:pointer;
-  transition:0.3s ease;
-  text-decoration:none;
-}
-
-.btn.main{
-  background:#ff003c;
-  color:#fff;
-}
-
-.btn.main:hover{
-  box-shadow:0 0 20px #ff003c;
-}
-
-.btn.ghost{
-  background:transparent;
-  border:1px solid #ff003c;
-  color:#ff003c;
-}
-
-.btn.ghost:hover{
-  box-shadow:0 0 20px #ff003c;
-}
-
-
-.cinema-subtitle{
-  text-align:center;
-  color:#aaa;
-
-
-  margin-bottom:10px;
-
-  margin:20px 0;
-  line-height:1.7;
-  color:#ccc;
-}
-
-
-
-/* SECTIONS */
-.section{
-  padding:80px 60px;
-  text-align:center;
-}
-.section.dark{
-  background:#070a13;
-}
-
-.stats{
-  display:flex;
-  justify-content:center;
-  gap:50px;
-  margin-top:40px;
-}
-.stats span{
-  display:block;
-  font-size:40px;
-  color:#ff003c;
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:25px;
-  margin-top:40px;
-}
-.card{
-  background:#111;
-  padding:30px;
-  border-radius:15px;
-  transition:.3s;
-}
-.card:hover{
-  transform:translateY(-10px);
-  box-shadow:0 0 20px #ff003c44;
-}
-
-/* MEDIA */
-.media{
-  display:flex;
-  justify-content:center;
-  gap:30px;
-  flex-wrap:wrap;
-}
-.media img{
-  width:300px;
-  border-radius:15px;
-}
-
-/* FOOTER */
-footer{
-  padding:20px;
-  text-align:center;
-  background:#000;
-  color:#777;
-}
-.subtitle{
-  color:#aaa;
-  margin-bottom:40px;
-}
-
-/* GALLERY GRID */
-.gallery{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:30px;
-}
-
-/* CARD */
-.media-card{
+   The image is simply placed whole, and the ring is sized from the same
+   token so the two are concentric at any viewport. Overlapping the ring a
+   little is intentional. */
+.hero__art{
   position:relative;
-  overflow:hidden;
-  border-radius:18px;
-  cursor:pointer;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
+  display:grid;place-items:center;
+  --art:clamp(170px,23vw,290px);
 }
-
-.media-card img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transition:.6s ease;
+.hero__char{
+  position:relative;z-index:2;
+  width:var(--art);
+  line-height:0;
 }
-
-/* HOVER */
-.media-card:hover img{
-  transform:scale(1.15);
-  filter:brightness(.4);
+.hero__char img{
+  width:100%;height:auto;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 22px 40px rgba(0,0,0,.75));
 }
+html[data-fx="full"] .hero__char img{animation:float 4s ease-in-out infinite;will-change:transform}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
 
-.overlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  transition:.5s;
+.hero__glow{
+  position:absolute;z-index:0;
+  width:calc(var(--art) + clamp(70px,16vw,180px));aspect-ratio:1;
+  background:radial-gradient(circle,rgba(255,45,85,.5),transparent 68%);
 }
+html[data-fx="full"] .hero__glow{animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:.95;transform:scale(1.04)}}
 
-.media-card:hover .overlay{
-  opacity:1;
-}
-
-.overlay span{
-  font-size:18px;
-  margin-bottom:10px;
-}
-
-.overlay button{
-  background:#ff003c;
-  border:none;
-  padding:10px 22px;
-  color:#fff;
-  border-radius:30px;
-  cursor:pointer;
-}
-
-/* VIDEO STYLE */
-.media-card.video .play{
-  font-size:50px;
-  color:#ff003c;
-  opacity:1;
-}
-
-.hero-img{
-  position:relative;
-  width:45%;
-  height:500px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-/* CHARACTER */
-.hero-img .char{
-  width:320px;
-  height:auto;          /* keeps the 640x672 aspect ratio instead of squashing it */
-  z-index:3;
-  animation: float 4s ease-in-out infinite;
-}
-
-/* GLOW */
-.glow{
-  position:absolute;
-  width:360px;
-  height:360px;
-  background:radial-gradient(circle, #ff003c55, transparent 70%);
-  filter:blur(40px);
-  z-index:1;
-}
-
-/* DIMENSION RING — the red circle around the floating LL. Restored to its
-   original full shape: a complete, evenly-opaque circle (2px border at 60%
-   opacity, reading soft, not hard) with the original slow spin. */
-.dimension-ring{
-  position:absolute;
-  width:420px;
-  height:420px;
-  border:2px solid #ff003c;
+/* The ring is sized off the same --art token, so it is guaranteed to be
+   concentric with the character no matter the viewport. The artwork is
+   646/640 of its width tall, so 1.13x leaves an even margin all round. */
+.hero__ring{
+  position:absolute;z-index:1;
+  width:calc(var(--art) * 1.13);aspect-ratio:1;
+  border:2px dashed var(--red);
   border-radius:50%;
-  animation: spin 10s linear infinite;
-  opacity:.6;
+  opacity:.55;
+}
+html[data-fx="full"] .hero__ring{animation:spin 26s linear infinite;will-change:transform}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.hero__cue{
+  position:absolute;left:50%;bottom:1.1rem;
+  transform:translateX(-50%);
+  display:none;flex-direction:column;align-items:center;gap:.2rem;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.28em;color:var(--faint);
+}
+.hero__cue svg{width:1rem;height:1rem}
+@media (min-width:900px){.hero__cue{display:flex}}
+@media (hover:hover){html[data-fx="full"] .hero__cue svg{animation:nudge 2.2s ease-in-out infinite}}
+@keyframes nudge{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(4px);opacity:1}}
+
+/* Stacked hero: tighten it so the character still peeks above the fold. */
+@media (max-width:899px){
+  .hero{
+    padding-top:calc(var(--nav-h) + clamp(1.5rem,5vh,2.75rem));
+    padding-bottom:clamp(2.5rem,7vh,4rem);
+  }
+  .hero__art{--art:clamp(160px,40vw,230px)}
 }
 
-/* ANIMATIONS */
-@keyframes float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-15px)}
+/* =====================================================================
+   SECTION SCAFFOLD
+   One rhythm everywhere, so the page reads as one ordered document
+   rather than a stack of unrelated blocks.
+   ===================================================================== */
+.section{position:relative;padding-block:var(--section-y);background:var(--void)}
+/* hairline between stacked sections — 1px, painted once */
+.section + .section::before{
+  content:'';position:absolute;inset-inline:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--line-strong) 20%,var(--line-strong) 80%,transparent);
 }
-@keyframes spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
+.section--dark{background:var(--void-deep)}
 
-/* Pixel art needs crisp nearest-neighbour upscaling. Applying `pixelated` to
-   every <img> (as it was before) makes the downscaled screenshots and the
-   vector-ish logo jagged, so it is scoped to the actual sprite art. */
-.character img,
-.hero-img .char {
-  image-rendering: pixelated;
-}
-
-/* CHARACTERS */
-.characters{
-  /* flex-wrap + justify-content:center keeps the last (Walter) card centred
-     when the row wraps. A grid left it stranded in the left column. */
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:30px;
-  margin-top:50px;
-}
-
-.character{
-  flex:1 1 220px;
-  max-width:280px;
-  background:#0d111c;
-  border-radius:20px;
-  padding:20px;
-  cursor:pointer;
-  transition:.4s;
-  box-shadow:0 0 20px rgba(0,0,0,.6);
-}
-
-.character:hover{
-  transform:translateY(-10px) scale(1.05);
-  box-shadow:0 0 25px #ff003c55;
-}
-
-.character img{
-  width:100%;
-  height:200px;
-  object-fit:contain;
-}
-
-.character h3{
-  margin-top:15px;
-  color:#ff003c;
-}
-
-.character .desc{
-  display:none;
-}
-
-/* INFO BOX */
-#character-info{
-  margin-top:40px;
-  padding:30px;
-  background:#070a13;
-  border-radius:20px;
-  max-width:700px;
-  margin-inline:auto;
-  display:none;
-  box-shadow:0 0 30px #ff003c33;
-}
-
-#character-info h3{
-  color:#f3083e;
-  margin-bottom:15px;
-}
-
-/* VIDEO INTRO — original look restored: full-bleed on desktop, 16/9 strip
-   on mobile (as it was before). object-fit:contain means the whole frame
-   is always visible, nothing cropped. On mobile only, the strip is shifted
-   below the fixed 56px top bar so nothing is hidden behind it; desktop is
-   unchanged. */
-.video-intro{
-  position:relative;
-  width:100%;
-  height:120vh; /* fallback for browsers without dvh support */
-  overflow:hidden;
-}
-
-.video-intro video{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  background:#0b0f1a;
-  /* 16:9 source video — contain keeps the entire frame visible; cover
-     would crop edges */
-  object-fit:contain;
-  object-position:center;
-}
-
-@media (max-width:768px){
-	/* mobile-only: the fixed header bar is 56px tall, so shift the 16/9
-	   strip below it to keep the whole clip visible */
-	.video-intro{
-		height:auto;
-		aspect-ratio:16/9;
-		margin-top:56px;
-	}
-}
-
-
-
-.cinema-section{
-  overflow:hidden;
-  padding-bottom:80px;
-
-}
-
-.cinema-title{
+.section__head{
   text-align:center;
-  font-size:32px;
-  margin-bottom:40px;
-  letter-spacing:2px;
-  color:#ff003c;
+  max-width:64ch;
+  margin:0 auto clamp(2rem,5vw,3.25rem);
 }
+.section__title{font-size:var(--fs-h2);letter-spacing:-.015em}
+.section__title .red{color:var(--red)}
+.section__title .blue{color:#2f8bff}
+.section__sub{margin-top:1.1rem;font-size:var(--fs-lede)}
+.section__foot{margin-top:2.25rem;text-align:center;font-size:var(--fs-small);color:var(--faint)}
 
-.carousel-container{
+/* =====================================================================
+   SCREENSHOT CAROUSEL
+   Coverflow on capable pointers, native scroll-snap filmstrip everywhere
+   else. Same markup, no JS required for the fallback.
+   ===================================================================== */
+.section--cinema{
   position:relative;
-  width:100%;
-  height:420px;
-  perspective:1000px;
+  /* The coverflow cards at ±2 sit well outside the viewport on purpose.
+     `clip` contains them without creating a scroll container, so the page
+     still has no horizontal overflow. */
+  overflow:clip;
+}
+
+.carousel__stage{
   display:flex;
-  justify-content:center;
-  align-items:center;
-  transform-style:preserve-3d;
-  touch-action:pan-y;
+  gap:clamp(.75rem,2vw,1.25rem);
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  /* Equal inset on both sides is what lets the FIRST and LAST card reach
+     the centre. Without it a scroll container can only ever scroll so far,
+     so those two cards were pinned to the edges and unreachable. */
+  padding-block:.5rem;
+  padding-inline:max(1rem, calc((100% - min(86vw,620px)) / 2));
+  -webkit-overflow-scrolling:touch;
 }
+.carousel__stage::-webkit-scrollbar{display:none}
 
-.cinema-card{
-  position:absolute;
-  width:480px;
-  height:270px;
-  background:#1a1a1a;
-  border-radius:15px;
+.shot{
+  position:relative;
+  flex:0 0 min(86vw,620px);
+  scroll-snap-align:center;
+  aspect-ratio:16/9;
+  border-radius:var(--r-lg);
   overflow:hidden;
+  background:var(--surface);
+  border:1px solid var(--line);
+  transition:transform .4s var(--ease),border-color .3s;
+}
+@media (hover:hover){html[data-fx="full"] .shot:hover{transform:translateY(-4px);border-color:rgba(255,45,85,.4)}}
+.shot[role="button"]{cursor:pointer}
+.shot[role="button"]:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.shot__img{width:100%;height:100%;object-fit:cover}
+.shot__top{position:absolute;z-index:3;top:14px;left:18px}
+.shot__top img{height:24px;width:auto;image-rendering:pixelated;filter:drop-shadow(0 2px 2px rgba(0,0,0,.8))}
+
+.shot::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(3,5,11,.94) 0%,rgba(3,5,11,.5) 32%,transparent 58%);
+  opacity:.85;
+}
+.shot__body{
+  position:absolute;z-index:2;left:0;right:0;bottom:0;
+  padding:clamp(1rem,2.5vw,1.5rem);
+}
+.shot__title{
+  display:block;
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(1rem,2.6vw,1.4rem);letter-spacing:.02em;color:var(--ink);
+  margin-bottom:.2rem;
+}
+.shot__info{display:block;font-family:var(--mono);font-size:var(--fs-small);color:#c6cee0}
+
+/* controls only exist in coverflow mode */
+.carousel__nav{display:none}
+
+/* --- coverflow: full-fx + fine pointer + enough width to spread out --- */
+@media (min-width:760px) and (hover:hover) and (pointer:fine){
+  html[data-fx="full"] .carousel__stage{
+    display:block;
+    /* exactly the active card's height plus breathing room */
+    height:calc(min(52vw,660px) * 9 / 16 + 2rem);
+    overflow:visible;
+    padding:0;
+    perspective:1400px;
+    touch-action:pan-y;
+  }
+  html[data-fx="full"] .shot{
+    position:absolute;
+    top:50%;left:50%;
+    width:min(52vw,660px);
+    height:auto;
+    border-radius:var(--r-lg);
+    transition:transform .7s var(--ease),opacity .6s var(--ease);
+    cursor:pointer;
+  }
+  html[data-fx="full"] .shot__body{opacity:0;transform:translate3d(0,14px,0);transition:opacity .45s ease .08s,transform .5s var(--ease) .08s}
+
+  /* only the active card paints a glow; the rest are flat */
+  html[data-fx="full"] .shot[data-pos="0"]{
+    z-index:10;
+    transform:translate3d(-50%,-50%,0) scale(1);
+    opacity:1;
+    box-shadow:0 30px 70px rgba(0,0,0,.75),0 0 0 2px var(--red);
+  }
+  html[data-fx="full"] .shot[data-pos="0"] .shot__body{opacity:1;transform:none}
+
+  html[data-fx="full"] .shot[data-pos="1"],
+  html[data-fx="full"] .shot[data-pos="-1"]{
+    z-index:6;opacity:.55;
+    filter:saturate(.7) brightness(.75);
+  }
+  html[data-fx="full"] .shot[data-pos="1"]{transform:translate3d(calc(-50% + 58%),-50%,-220px) scale(.78) rotateY(-16deg)}
+  html[data-fx="full"] .shot[data-pos="-1"]{transform:translate3d(calc(-50% - 58%),-50%,-220px) scale(.78) rotateY(16deg)}
+
+  html[data-fx="full"] .shot[data-pos="2"],
+  html[data-fx="full"] .shot[data-pos="-2"]{
+    z-index:3;opacity:.22;
+    filter:saturate(.4) brightness(.5);
+  }
+  html[data-fx="full"] .shot[data-pos="2"]{transform:translate3d(calc(-50% + 88%),-50%,-420px) scale(.6) rotateY(-24deg)}
+  html[data-fx="full"] .shot[data-pos="-2"]{transform:translate3d(calc(-50% - 88%),-50%,-420px) scale(.6) rotateY(24deg)}
+
+  /* offscreen slots: transform + opacity only, nothing to repaint */
+  html[data-fx="full"] .shot[data-pos="hidden"]{z-index:1;opacity:0;pointer-events:none}
+  html[data-fx="full"] .shot[data-pos="hidden"]:nth-child(even){transform:translate3d(calc(-50% + 120%),-50%,-600px) scale(.5)}
+  html[data-fx="full"] .shot[data-pos="hidden"]:nth-child(odd){transform:translate3d(calc(-50% - 120%),-50%,-600px) scale(.5)}
+
+  html[data-fx="full"] .carousel__nav{
+    display:flex;align-items:center;justify-content:center;gap:clamp(1rem,3vw,2rem);
+    margin-top:clamp(1.5rem,4vw,2.5rem);
+  }
+}
+.carousel__arrow{
+  display:grid;place-items:center;
+  width:46px;height:46px;flex:none;
+  border:1px solid var(--line-strong);border-radius:50%;
+  color:var(--ink);background:rgba(255,255,255,.03);
+  transition:transform .25s var(--ease),border-color .25s,color .25s,background-color .25s;
+}
+.carousel__arrow svg{width:1.15rem;height:1.15rem}
+.carousel__arrow:disabled{opacity:.3;cursor:default;transform:none}
+@media (hover:hover){html[data-fx="full"] .carousel__arrow:not(:disabled):hover{border-color:var(--red);color:var(--red);background:var(--red-soft)}}
+@media (hover:none){.carousel__arrow:not(:disabled):active{transform:scale(.94)}}
+
+.carousel__dots{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:center}
+/* 26px tall hit area with a 4px bar drawn inside it */
+.carousel__dots button{position:relative;width:30px;height:26px;background:none}
+.carousel__dots button::after{
+  content:'';position:absolute;left:4px;right:4px;top:50%;
+  height:4px;margin-top:-2px;border-radius:var(--r-pill);
+  background:var(--line-strong);
+  transition:background-color .3s,transform .3s var(--ease);
+}
+.carousel__dots button[aria-current="true"]::after{background:var(--red);transform:scaleY(1.9)}
+
+/* =====================================================================
+   STATS
+   ===================================================================== */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(1rem,3vw,2rem);
+  max-width:760px;margin-inline:auto;
+}
+.stat{
+  padding:clamp(1.25rem,3vw,2rem) 1rem;
+  background:linear-gradient(180deg,var(--surface),transparent);
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  text-align:center;
+}
+.stat dt{font-family:var(--mono);font-size:var(--fs-label);letter-spacing:.2em;color:var(--faint)}
+.stat dd{font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,7vw,3.4rem);line-height:1;color:var(--red)}
+
+/* =====================================================================
+   FEATURES
+   ===================================================================== */
+.features{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));
+  gap:clamp(1rem,2.2vw,1.6rem);
+}
+.feature{
+  padding:clamp(1.5rem,3vw,2rem);
+  background:linear-gradient(180deg,var(--surface),rgba(11,16,24,.3));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  transition:transform .4s var(--ease),border-color .3s;
+}
+.feature__icon{
+  display:grid;place-items:center;
+  width:52px;height:52px;margin:0 auto 1.1rem;
+  border-radius:var(--r-md);
+  background:var(--red-soft);border:1px solid rgba(255,45,85,.28);
+  color:var(--red);
+}
+.feature__icon svg{width:24px;height:24px}
+.feature h3{
+  font-size:var(--fs-h3);letter-spacing:.03em;text-align:center;
+  text-transform:none;
+}
+@media (hover:hover){
+  html[data-fx="full"] .feature:hover{transform:translateY(-5px);border-color:rgba(255,45,85,.4);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+}
+
+/* =====================================================================
+   CHARACTERS
+   ===================================================================== */
+.cast{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));
+  gap:clamp(1rem,2.2vw,1.6rem);
+}
+.character{
+  position:relative;
+  display:grid;
+  grid-template-columns:clamp(96px,30%,128px) minmax(0,1fr);
+  gap:clamp(.9rem,2.4vw,1.5rem);
+  align-items:start;
+  text-align:left;
+  padding:clamp(1.1rem,2.8vw,1.6rem);
+  background:linear-gradient(180deg,var(--surface),rgba(11,16,24,.3));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  transition:transform .4s var(--ease),border-color .3s,background-color .3s,box-shadow .3s;
+}
+/* Played = lit red. script.js removes aria-pressed when the clip ends. */
+.character[aria-pressed="true"]{
+  border-color:rgba(255,45,85,.55);
+  background:linear-gradient(180deg,rgba(255,45,85,.12),rgba(11,16,24,.3));
+  box-shadow:0 0 30px rgba(255,45,85,.22);
+}
+.character::after{
+  content:'';position:absolute;left:clamp(1.1rem,2.8vw,1.6rem);right:clamp(1.1rem,2.8vw,1.6rem);bottom:0;height:2px;
+  background:var(--red);
+  transform:scaleX(0);transform-origin:0 50%;
+  transition:transform .45s var(--ease);
+}
+.character[aria-pressed="true"]::after{transform:scaleX(1)}
+@media (hover:hover){html[data-fx="full"] .character:hover{transform:translateY(-5px);border-color:rgba(255,45,85,.35)}}
+@media (hover:none){.character:active{transform:scale(.985)}}
+
+.character__body{display:flex;flex-direction:column;min-width:0}
+
+/* ── Portraits ──────────────────────────────────────────────────────
+   The three sprites are 64x64 GIFs whose visible character only fills
+   15-29% of the frame and sits well below centre. Measured opaque
+   bounding boxes (read back from a canvas):
+
+     sprite   bbox     origin    centre (x,y)
+     mikie    18x34    (23,30)   (32,47)     → 15% of the frame visible
+     mike     26x45    (19,19)   (32,41.5)   → 29%
+     walter   19x39    (21,25)   (30.5,44.5) → 18%
+
+   Each rule scales the frame so the visible art fills ~80% of the
+   portrait, then re-centres it. Solved from "background-position P% puts
+   P% of the image overhang past the edge":
+   P = (0.5 - centre·scale) / (1 - scale).
+   Total payload for all three: 3.9 KB. */
+.character__portrait{
+  aspect-ratio:4/5;
+  overflow:hidden;
+  border-radius:var(--r-md);
+  background-color:rgba(255,45,85,.06);
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+}
+.character--mikie .character__portrait{
+  background-image:url('assets/young_mike3-export.gif');
+  background-size:auto 151%;
+  background-position:50% 120%;
+}
+.character--mike .character__portrait{
+  background-image:url('assets/mike.gif');
+  background-size:auto 114%;
+  background-position:50% 172%;
+}
+.character--walter .character__portrait{
+  background-image:url('assets/walter.gif');
+  background-size:auto 131%;
+  background-position:44% 132%;
+}
+
+.character__name{font-family:var(--display);font-weight:900;font-size:clamp(1.25rem,4vw,1.6rem);letter-spacing:.06em;color:var(--ink)}
+.character__desc{margin-top:.75rem;font-size:.94rem}
+.character__cue{
+  display:flex;align-items:center;
+  margin-top:1.1rem;padding-top:.9rem;
+  border-top:1px solid var(--line);
+  color:var(--faint);
+  transition:color .25s;
+}
+.character__cue svg{width:1.05rem;height:1.05rem}
+.character:hover .character__cue{color:var(--muted)}
+.character[aria-pressed="true"] .character__cue{color:var(--red)}
+
+/* =====================================================================
+   DEMO PORTAL — the original singularity, on the new cosmos backdrop
+   ===================================================================== */
+.omega{position:relative;background:#010104}
+.omega__root{
+  position:relative;
+  min-height:100vh;min-height:100svh;
+  display:grid;place-items:center;
+  padding:clamp(3rem,9vh,6rem) var(--pad-x);
+  overflow:clip;
+  background:#010104;
+  font-family:var(--mono);
+  isolation:isolate;
+  --primary:var(--cyan);
+  --core-glow:rgba(34,224,255,.5);
+}
+.omega__root.is-charging{--primary:#ff0055;--core-glow:rgba(255,0,85,.8)}
+
+/* Original layout: the readout is pinned to the top of the panel, the
+   mechanism sits centred in the flow, and the status line is pinned to the
+   bottom. Absolute edges are what made the original read as a HUD. */
+.omega__readout{
+  position:absolute;left:0;right:0;z-index:4;
+  text-align:center;
+  padding-inline:var(--pad-x);
+  text-shadow:0 0 20px var(--primary);
+  transform:translateY(20px);
+}
+.omega__readout--top{top:clamp(20px,4vw,50px)}
+.omega__title{
+  font-size:clamp(1.9rem,7vw,3.4rem);
+  letter-spacing:.06em;
+  color:var(--ink);
+}
+.omega__sub{font-family:var(--body);font-size:var(--fs-lede);margin-top:.5rem}
+.omega__sub span{color:var(--muted)}
+.omega__status{
+  position:absolute;left:0;right:0;bottom:clamp(20px,4vw,40px);
+  z-index:4;
+  text-align:center;
+  font-family:var(--mono);font-size:var(--fs-small);letter-spacing:.18em;
+  color:var(--primary);min-height:1.4em;
+  padding:0 1rem;
+  transition:color .3s;
+}
+
+.cosmos{position:absolute;inset:0;z-index:0;overflow:clip;pointer-events:none}
+/* No filter:blur() here. Radial gradients are already soft, and blurring a
+   layer twice the viewport size was one of the heaviest rasters on the page. */
+.cosmos__nebula{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(50% 45% at 50% 45%,rgba(0,229,255,.13),transparent 68%),
+    radial-gradient(38% 34% at 82% 18%,rgba(255,0,85,.10),transparent 70%),
+    radial-gradient(40% 36% at 16% 84%,rgba(168,85,247,.10),transparent 72%);
+}
+html[data-fx="full"] .cosmos__nebula{animation:nebula 24s ease-in-out infinite alternate}
+@keyframes nebula{from{opacity:.55;transform:scale(1)}to{opacity:1;transform:scale(1.06)}}
+
+/* Oversized + transform drift instead of background-position, so the whole
+   thing stays on the compositor. */
+.cosmos__stars{
+  position:absolute;inset:-35%;
+  background-image:
+    radial-gradient(1.5px 1.5px at 50% 50%,rgba(255,255,255,.9),transparent),
+    radial-gradient(1px 1px at 20% 80%,rgba(255,255,255,.45),transparent),
+    radial-gradient(2px 2px at 74% 24%,rgba(190,230,255,.6),transparent);
+  background-size:120px 120px,220px 220px,320px 320px;
+  opacity:.32;
+}
+html[data-fx="full"] .cosmos__stars{animation:drift 90s linear infinite;will-change:transform}
+@keyframes drift{to{transform:translate3d(0,320px,0)}}
+
+/* 120vmax, not 200vmax: the old size needed a ~1690px square layer (≈11 MB of
+   RGBA) just to hold a conic gradient. */
+.cosmos__rays{
+  position:absolute;top:50%;left:50%;
+  width:120vmax;height:120vmax;
+  margin:-60vmax 0 0 -60vmax;
+  background:conic-gradient(from 0deg at 50% 50%,
+    transparent 0deg,rgba(0,229,255,.07) 18deg,transparent 34deg,
+    rgba(0,229,255,.045) 62deg,transparent 78deg,
+    rgba(168,85,247,.05) 150deg,transparent 168deg,
+    transparent 360deg);
+}
+html[data-fx="full"] .cosmos__rays{animation:spin 120s linear infinite;will-change:transform}
+
+.hud-frame{
+  position:absolute;inset:clamp(12px,2.5vw,30px);z-index:3;pointer-events:none;
+  border:1px solid rgba(34,224,255,.12);
+  background:
+    linear-gradient(to right,var(--primary) 2px,transparent 2px) 0 0,
+    linear-gradient(to bottom,var(--primary) 2px,transparent 2px) 0 0,
+    linear-gradient(to left,var(--primary) 2px,transparent 2px) 100% 100%,
+    linear-gradient(to top,var(--primary) 2px,transparent 2px) 100% 100%;
+  background-size:22px 22px;background-repeat:no-repeat;
+  opacity:.45;
+  transition:opacity .4s;
+}
+.omega__root.is-charging .hud-frame{opacity:.8}
+
+/* ── The mechanism ────────────────────────────────────────────────────
+   Original geometry: a 400px square (fluid on small screens), rings inset
+   30px and 60px, a 100px vortex, and the whole core dropped 40px. */
+.artifact{
+  position:relative;
+  width:min(400px,74vw);aspect-ratio:1;
+  transform-style:preserve-3d;
+  transition:transform .1s ease-out;
+  z-index:5;
+}
+.core{
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  transform-style:preserve-3d;
   cursor:pointer;
-  box-shadow:0 20px 50px rgba(0,0,0,0.8);
-  border:1px solid #333;
-
-  /* will-change on all seven cards promotes seven permanent compositor layers
-     for the whole page. Only the card that is actually moving needs it. */
-  transition:
-    transform 0.7s cubic-bezier(0.19, 1, 0.22, 1),
-    opacity 0.7s cubic-bezier(0.19, 1, 0.22, 1),
-    filter 0.7s cubic-bezier(0.19, 1, 0.22, 1);
-
-  -webkit-box-reflect: below 0px linear-gradient(transparent, transparent, rgba(0,0,0,0.3));
+  transform:translateY(40px);
+  border-radius:50%;
+  background:none;
 }
 
-.cinema-card.center{
-  will-change: transform, opacity, filter;
-}
-
-.cinema-card img.poster{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  pointer-events:none;
-}
-
-.cinema-card::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  /* deeper bottom scrim so the overlay text always sits on a dark band */
-  background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 32%, rgba(0,0,0,0.25) 48%, rgba(0,0,0,0.06) 65%, transparent 74%);
-  opacity:.9;
+.energy-ring{
+  position:absolute;inset:0;
+  border-radius:50%;
+  transform-style:preserve-3d;
+  box-shadow:0 0 30px rgba(34,224,255,.05),inset 0 0 30px rgba(34,224,255,.05);
   transition:opacity .5s;
 }
+.ring-outer{
+  border:1px solid color-mix(in srgb,var(--primary) 30%,transparent);
+  border-top:4px solid var(--primary);
+  border-bottom:4px solid var(--primary);
+}
+.ring-mid{
+  inset:30px;
+  border:2px dashed color-mix(in srgb,var(--primary) 55%,transparent);
+  filter:drop-shadow(0 0 5px var(--primary));
+}
+.ring-inner{
+  inset:60px;
+  border-left:8px double var(--primary);
+  border-right:8px double var(--primary);
+}
+html[data-fx="full"] .ring-outer{animation:gyroSpinA 12s linear infinite;will-change:transform}
+html[data-fx="full"] .ring-mid{animation:gyroSpinB 8s linear infinite reverse;will-change:transform}
+html[data-fx="full"] .ring-inner{animation:gyroSpinC 6s cubic-bezier(.4,0,.2,1) infinite alternate;will-change:transform}
+@keyframes gyroSpinA{from{transform:rotateX(0) rotateY(0) rotateZ(0)}to{transform:rotateX(360deg) rotateY(180deg) rotateZ(360deg)}}
+@keyframes gyroSpinB{from{transform:rotateX(0) rotateY(0)}to{transform:rotateX(-360deg) rotateY(360deg)}}
+@keyframes gyroSpinC{from{transform:rotateY(0) rotateZ(-20deg)}to{transform:rotateY(360deg) rotateZ(20deg)}}
 
-.cinema-card .top-bar{
-  position:absolute;
-  top:15px;
-  left:20px;
-  right:20px;
+.singularity-vortex{
+  position:absolute;inset:100px;
+  border-radius:50%;
+  background:#000;
+  overflow:hidden;
+  display:grid;place-items:center;
+  transform:translateZ(20px);
+  box-shadow:inset 0 0 60px rgba(0,0,0,1),0 0 50px var(--core-glow),0 0 100px var(--primary),inset 0 0 10px rgba(255,255,255,.8);
+  transition:transform .5s cubic-bezier(.175,.885,.32,1.275),box-shadow .4s;
+}
+.singularity-vortex i{
+  position:absolute;inset:-50%;
+  background:conic-gradient(from 180deg,transparent 0%,var(--primary) 30%,#fff 50%,transparent 80%);
+  opacity:.7;
+  filter:blur(10px);
+}
+html[data-fx="full"] .singularity-vortex i{animation:vortexSpin 2s linear infinite;will-change:transform}
+@keyframes vortexSpin{to{transform:rotate(360deg)}}
+
+/* Dark lens so the readout stays legible whichever way the vortex points. */
+.singularity-vortex::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle,rgba(0,0,0,.8) 20%,rgba(0,0,0,.3) 64%,transparent 84%);
+}
+
+.activation-label{
+  position:absolute;z-index:3;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) translateZ(40px);
+  font-family:var(--display);font-size:clamp(.7rem,2.4vw,.88rem);
+  letter-spacing:.3em;color:#fff;
+  text-shadow:0 0 10px var(--primary);
+  white-space:nowrap;pointer-events:none;
+  opacity:.85;
+  transition:letter-spacing .35s var(--ease),opacity .3s;
+}
+@media (hover:hover){
+  html[data-fx="full"] .core:hover .activation-label{letter-spacing:.44em;opacity:1}
+  html[data-fx="full"] .core:hover .singularity-vortex{box-shadow:inset 0 0 40px #000,0 0 80px var(--primary),0 0 150px var(--primary),inset 0 0 20px white;transform:translateZ(30px) scale(1.05)}
+}
+@media (hover:none){.core:active .singularity-vortex{box-shadow:inset 0 0 40px #000,0 0 80px var(--primary),0 0 150px var(--primary)}}
+
+/* launch sequence — driven by script.js */
+.omega__root.is-charging .energy-ring{animation-duration:.6s}
+.omega__root.is-charging .core{animation:shake .18s linear infinite;will-change:transform}
+@keyframes shake{
+  0%{transform:translateY(40px) translate3d(2px,1px,0)}
+  25%{transform:translateY(40px) translate3d(-3px,-2px,0)}
+  50%{transform:translateY(40px) translate3d(3px,1px,0)}
+  75%{transform:translateY(40px) translate3d(-2px,3px,0)}
+  100%{transform:translateY(40px) translate3d(1px,-1px,0)}
+}
+.omega__root.is-breached .energy-ring{opacity:0}
+.omega__root.is-breached .singularity-vortex{animation:collapse 1.4s var(--ease) forwards}
+@keyframes collapse{
+  0%{transform:translateZ(20px) scale(1)}
+  45%{transform:translateZ(20px) scale(.08)}
+  100%{transform:translateZ(20px) scale(26);opacity:0}
+}
+.omega__flash{position:fixed;inset:0;z-index:500;background:#fff;opacity:0;pointer-events:none}
+
+/* =====================================================================
+   GAME CONTROLS
+   ===================================================================== */
+/* Flex, not grid. With 10 tiles a grid leaves an orphan in the left column
+   of the last row — which is exactly the "drifting off to the left" look.
+   `justify-content:center` centres however many land on that row. */
+.keys{
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  z-index:3;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:clamp(.5rem,1.6vw,1rem);
+  max-width:1000px;
+  margin-inline:auto;
 }
-
-.cinema-card .top-bar .logo{
-  height:25px;
-  width:auto;           /* 64x67 emblem — forcing a width squashes it */
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.8));
+/* `flex-grow:0` keeps a lone tile in the last row from stretching across
+   the whole row; it stays tile-sized and the row still centres. */
+.key{
+  flex:0 1 168px;
+  max-width:186px;
 }
-
-.cinema-card .rating{
-  background:rgba(255,255,255,0.1);
-  backdrop-filter:blur(5px);
-  padding:5px 12px;
-  border-radius:8px;
-  font-weight:bold;
-  font-size:.9em;
-  color:#fff;
-  box-shadow:0 2px 5px rgba(0,0,0,.2);
-}
-
-.cinema-card .card-content{
-  position:absolute;
-  bottom:18px;
-  left:24px;
-  right:24px;
-  color:#fff;
-  z-index:2;
-  opacity:0;
-  transform:translateY(15px);
-  transition:all .5s ease .1s;
-  text-align:left;
-}
-
-.cinema-card .card-title{
-  font-size:1.45em;
-  font-weight:700;
-  display:block;
-  margin-bottom:4px;
-  letter-spacing:.5px;
-  line-height:1.15;
-  text-shadow:0 2px 4px rgba(0,0,0,.9), 0 0 14px rgba(0,0,0,.6);
-}
-
-.cinema-card .card-info{
-  font-size:.85em;
-  color:#e8e8e8;
-  font-weight:500;
-  line-height:1.35;
-  letter-spacing:.25px;
-  text-shadow:0 1px 3px rgba(0,0,0,.9);
-}
-
-/* Positions */
-.cinema-card.center{
-  transform:translate3d(0,0,0) scale(1.15);
-  z-index:10;
-  opacity:1;
-  filter:blur(0);
-}
-
-/* The floating (center) card keeps its red frame as a masked pseudo-element
-   instead of a hard border: the top edge interpolates smoothly to
-   transparent over ~20px instead of ending in a hard cut. */
-.cinema-card.center::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  border:2px solid #ff003c;
-  border-radius:15px;
-  pointer-events:none;
-  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 20px, #000 100%);
-  mask-image:linear-gradient(to bottom, transparent 0%, #000 20px, #000 100%);
-}
-.cinema-card.center .card-content{
-  opacity:1;
-  transform:translateY(0);
-}
-
-.cinema-card.right-1{
-  transform:translate3d(380px,0,-100px) scale(.85) rotateY(-15deg);
-  z-index:5;
-  opacity:.6;
-  filter:blur(1px) brightness(.7);
-}
-.cinema-card.right-2{
-  transform:translate3d(700px,0,-200px) scale(.7) rotateY(-25deg);
-  z-index:4;
-  opacity:.3;
-  filter:blur(3px) brightness(.5);
-}
-
-.cinema-card.left-1{
-  transform:translate3d(-380px,0,-100px) scale(.85) rotateY(15deg);
-  z-index:5;
-  opacity:.6;
-  filter:blur(1px) brightness(.7);
-}
-.cinema-card.left-2{
-  transform:translate3d(-700px,0,-200px) scale(.7) rotateY(25deg);
-  z-index:4;
-  opacity:.3;
-  filter:blur(3px) brightness(.5);
-}
-
-/* Responsive */
-@media (max-width: 768px){
-  .cinema-card{ width:300px; height:170px; }
-  .cinema-card.right-1{ transform:translate3d(160px,0,-100px) scale(.85) rotateY(-15deg); }
-  .cinema-card.right-2{ transform:translate3d(280px,0,-200px) scale(.7) rotateY(-25deg); }
-  .cinema-card.left-1{ transform:translate3d(-160px,0,-100px) scale(.85) rotateY(15deg); }
-  .cinema-card.left-2{ transform:translate3d(-280px,0,-200px) scale(.7) rotateY(25deg); }
-
-  /* keep overlay text compact on narrow cards so it never wraps into or
-     clips against the top bar */
-  .cinema-card .card-title{ font-size:1.3em; letter-spacing:.2px; }
-  .cinema-card .card-info{ font-size:.78em; line-height:1.3; }
-  .cinema-card .card-content{ left:14px; right:14px; bottom:12px; }
-}
-
-
-
-/* ==== OMEGA ISOLATION ==== */
-.omega-wrapper{
-  width:100%;
-  height:100vh;
-  position:relative;
-  overflow:hidden;
-  background:#020204;
-}
-
-.omega-root{
-  width:100%;
-  height:100%;
-  position:relative;
-  font-family:'Share Tech Mono', monospace;
-  perspective:1500px;
-}
-
-        :root {
-            --primary: #00f3ff;
-            --secondary: #ff0055;
-            --void-bg: #020204;
-            --core-glow: rgba(0, 243, 255, 0.5);
-        }
-
-        .omega-root {
-            margin: 0;
-            background: var(--void-bg);
-            font-family: 'Share Tech Mono', monospace;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--primary);
-            perspective: 1500px;
-        }
-
-
-        .cosmos-container { position: absolute; inset: 0; overflow: hidden; z-index: -1; }
-
-        .nebula-layer {
-            position: absolute; inset: -50%;
-            background: radial-gradient(circle at center, rgba(0, 243, 255, 0.1) 0%, transparent 60%),
-                        radial-gradient(circle at 80% 20%, rgba(255, 0, 85, 0.05) 0%, transparent 40%);
-            filter: blur(30px); opacity: 0.4;
-            animation: nebulaPulse 20s infinite alternate;
-        }
-
-        .star-dust {
-            position: absolute; inset: 0;
-            background-image: 
-                radial-gradient(1px 1px at 50% 50%, #fff, transparent),
-                radial-gradient(2px 2px at 20% 80%, rgba(255, 255, 255, 0.5), transparent);
-            background-size: 100px 100px, 250px 250px;
-            animation: starDrift 60s linear infinite; opacity: 0.2;
-        }
-
-        .god-rays {
-            position: absolute; top: 50%; left: 50%;
-            width: 200vmax; height: 200vmax;
-            transform: translate(-50%, -50%);
-            background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(0, 243, 255, 0.05) 20deg, transparent 40deg, rgba(0, 243, 255, 0.02) 60deg, transparent 360deg);
-            animation: rotateRays 60s linear infinite; pointer-events: none; z-index: 0;
-        }
-
-        .hud-frame {
-            position: absolute; inset: 30px; pointer-events: none; z-index: 10;
-            border: 1px solid rgba(0, 243, 255, 0.05);
-            background: 
-                linear-gradient(to right, var(--primary) 2px, transparent 2px) 0 0,
-                linear-gradient(to bottom, var(--primary) 2px, transparent 2px) 0 0,
-                linear-gradient(to left, var(--primary) 2px, transparent 2px) 100% 100%,
-                linear-gradient(to top, var(--primary) 2px, transparent 2px) 100% 100%;
-            background-size: 20px 20px; background-repeat: no-repeat; opacity: 0.5;
-        }
-
-        .top-readout {
-            position: absolute; top: 50px; width: 100%; text-align: center;
-            text-shadow: 0 0 20px var(--primary);
-            transform: translateY(20px);
-        }
-        .top-readout h1 {
-            font-family: 'Orbitron', sans-serif; font-weight: 900; letter-spacing: 10px;
-            font-size: 2.5rem; margin: 0;
-            background: linear-gradient(white, var(--primary));
-            -webkit-background-clip : text; -webkit-text-fill-color: transparent;
-        }
-
-        .artifact-container {
-            position: relative; width: 400px; height: 400px;
-            transform-style: preserve-3d; transition: transform 0.1s ease-out; z-index: 5;
-        }
-
-        .mechanism-core { position: absolute; inset: 0; transform-style: preserve-3d; cursor: pointer; transform: translateY(40px);}
-
-        .energy-ring {
-            position: absolute; inset: 0; border-radius: 50%; transform-style: preserve-3d;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.05), inset 0 0 30px rgba(0, 243, 255, 0.05);
-        }
-
-        .ring-outer {
-            border: 1px solid rgba(0, 243, 255, 0.3); border-top: 4px solid var(--primary); border-bottom: 4px solid var(--primary);
-            animation: gyroSpinA 12s linear infinite;
-        }
-        
-        .ring-mid {
-            inset: 30px; border: 2px dashed rgba(0, 243, 255, 0.5);
-            animation: gyroSpinB 8s linear infinite reverse; filter: drop-shadow(0 0 5px var(--primary));
-        }
-
-        .ring-inner {
-            inset: 60px; border-left: 8px double var(--primary); border-right: 8px double var(--primary);
-            animation: gyroSpinC 6s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-        }
-
-        .singularity-vortex {
-            position: absolute; inset: 100px; border-radius: 50%; background: #000;
-            box-shadow: inset 0 0 60px rgba(0,0,0,1), 0 0 50px var(--core-glow), 0 0 100px var(--primary), inset 0 0 10px rgba(255,255,255,0.8);
-            display: flex; justify-content: center; align-items: center; overflow: hidden;
-            transform: translateZ(20px); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .vortex-energy {
-            position: absolute; inset: -50%;
-            background: conic-gradient(from 180deg, transparent 0%, var(--primary) 30%, white 50%, transparent 80%);
-            animation: vortexSpin 2s linear infinite; opacity: 0.7; filter: blur(10px);
-        }
-        
-        .activation-label {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) translateZ(40px);
-            font-family: 'Orbitron'; font-size: 14px; letter-spacing: 4px; color: white;
-            text-shadow: 0 0 10px var(--primary); pointer-events: none; white-space: nowrap;
-            opacity: 0.8; transition: 0.3s;
-        }
-
-        .mechanism-core:hover .singularity-vortex {
-            box-shadow: inset 0 0 40px #000, 0 0 80px var(--primary), 0 0 150px var(--primary), inset 0 0 20px white;
-            transform: translateZ(30px) scale(1.05);
-        }
-        .mechanism-core:hover .activation-label { opacity: 1; letter-spacing: 6px; }
-
-        .omega-root.charging { --primary: #ff0055; --core-glow: rgba(255, 0, 85, 0.8); }
-        .omega-root.charging .mechanism-core { animation: violentShake 0.2s linear infinite; }
-        .omega-root.energy-ring { animation-duration: 1s !important; border-color: var(--secondary); box-shadow: 0 0 50px var(--secondary); }
-        .omega-root.charging .vortex-energy { animation-duration: 0.5s; background: conic-gradient(from 180deg, transparent 0%, var(--secondary) 50%, white 70%, transparent 100%); }
-
-        .omega-root.breach .singularity-vortex { animation: coreCollapse 1.5s forwards cubic-bezier(0.645, 0.045, 0.355, 1); }
-        .omega-root.breach .energy-ring { opacity: 0; transition: 0.5s; }
-
-        .event-horizon-flash {
-            position: fixed; inset: 0; background: white; z-index: 999;
-            opacity: 0; pointer-events: none; transition: opacity 0.1s ease-in;
-        }
-
-        @keyframes gyroSpinA { from {transform: rotateX(0) rotateY(0) rotateZ(0);} to {transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);}}
-        @keyframes gyroSpinB { from {transform: rotateX(0) rotateY(0);} to {transform: rotateX(-360deg) rotateY(360deg);}}
-        @keyframes gyroSpinC { from {transform: rotateY(0) rotateZ(-20deg);} to {transform: rotateY(360deg) rotateZ(20deg);}}
-        @keyframes vortexSpin { to { transform: rotate(360deg); } }
-        @keyframes rotateRays { to { transform: translate(-50%, -50%) rotate(360deg); } }
-        @keyframes starDrift { to { background-position: 0 100vh; } }
-        @keyframes nebulaPulse { 0% { opacity: 0.3; transform: scale(1); } 100% { opacity: 0.5; transform: scale(1.1); } }
-        
-        @keyframes violentShake {
-            0% { transform: translate(2px, 1px) rotate(0deg); }
-            25% { transform: translate(-3px, -2px) rotate(-1deg); }
-            50% { transform: translate(3px, 1px) rotate(1deg); }
-            75% { transform: translate(-2px, 3px) rotate(0deg); }
-            100% { transform: translate(1px, -1px) rotate(-1deg); }
-        }
-
-        @keyframes coreCollapse {
-            0% { transform: scale(1); filter: brightness(1); }
-            40% { transform: scale(0.05); filter: brightness(5); background: white; }
-            70% { transform: scale(0.01); filter: brightness(20); opacity: 1;}
-            100% { transform: scale(60); filter: brightness(100); opacity: 0; }
-        }
-
-        .readout-bottom { position: absolute; bottom: 40px; width: 100%; text-align: center; font-size: 12px; opacity: 0.6; letter-spacing: 2px;}
-
-        #omega-singularity{
-  position: relative;
-  width:100%;
-  height:100vh;
-  overflow:hidden;
-}
-
-
-
-.media-card{
-  border-radius:14px;
-}
-
-.media-card img{
-  height:180px;
-  object-fit:cover;
-}
-
-
-/* ════════════════ HUD SYSTEM STYLE ════════════════ */
-.hud-section{
-  position:relative;
-  padding:120px 60px;
+@media (max-width:899px){.key{flex:0 1 140px;max-width:172px}}
+@media (max-width:599px){.key{flex:0 1 30%}}
+.key{
+  display:grid;
+  justify-items:center;      /* everything centred inside its tile */
+  align-content:center;
+  gap:.45rem;
+  padding:clamp(1rem,2.4vw,1.5rem) .6rem;
+  background:linear-gradient(180deg,var(--surface),rgba(11,16,24,.3));
+  border:1px solid var(--line);border-radius:var(--r-md);
   text-align:center;
-  overflow:hidden;
-  background:linear-gradient(180deg,#02030a,#050716);
+  transition:transform .3s var(--ease),border-color .3s;
 }
+.key svg{margin-inline:auto}
+.key svg{width:22px;height:22px;color:var(--red);margin:0 auto}
+.key__name{font-family:var(--mono);font-size:var(--fs-label);letter-spacing:.18em;color:var(--ink);text-align:center}
+.key kbd{font-size:var(--fs-small);color:var(--faint);text-align:center}
+@media (hover:hover){html[data-fx="full"] .key:hover{transform:translateY(-3px);border-color:rgba(255,45,85,.35)}}
 
-.hud-section.dark{
-  background:linear-gradient(180deg,#000,#03040c);
-}
-
-.hud-frame-glow{
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(90deg,transparent,rgba(255,0,60,.15),transparent),
-    linear-gradient(180deg,transparent,rgba(255,0,60,.12),transparent);
-  opacity:.3;
-  pointer-events:none;
-  animation:hudScan 12s linear infinite;
-}
-
-@keyframes hudScan{
-  from{background-position:0 0,0 0}
-  to{background-position:200% 0,0 200%}
-}
-
-.hud-title{
-  font-size:38px;
-  letter-spacing:4px;
-  margin-bottom:10px;
-  color:#ff003c;
-  text-shadow:0 0 25px #ff003c88;
-}
-
-.hud-subtitle{
-  color:#aaa;
-  margin-bottom:70px;
-  letter-spacing:2px;
-}
-
-/* ===== CONTROLS ===== */
-.hud-controls{
+/* =====================================================================
+   CHANNELS
+   ===================================================================== */
+.channels{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:35px;
-  max-width:1100px;
-  margin-inline:auto;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));
+  gap:clamp(.6rem,1.8vw,1.1rem);
+  max-width:1000px;margin-inline:auto;
 }
-
-.hud-control{
+.channels__wide{grid-column:1/-1}
+.channel{
   position:relative;
-  background:rgba(10,12,25,.7);
-  border-radius:20px;
-  padding:30px 20px;
-  box-shadow:
-    0 0 40px rgba(255,0,60,.12),
-    inset 0 0 30px rgba(255,0,60,.08);
-  border:1px solid rgba(255,0,60,.25);
-  backdrop-filter:blur(12px);
-  transform-style:preserve-3d;
-  transition:.4s cubic-bezier(.19,1,.22,1);
-}
-
-.hud-control span{
-  font-size:32px;
-  color:#ff003c;
-  text-shadow:0 0 15px #ff003caa;
-}
-
-.hud-control h4{
-  margin:12px 0 4px;
-  letter-spacing:2px;
-}
-
-.hud-control p{
-  font-size:13px;
-  color:#bbb;
-}
-
-.hud-control::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:20px;
-  background:
-    linear-gradient(120deg,transparent 30%,rgba(255,0,60,.35),transparent 70%);
-  opacity:0;
-  transition:.4s;
-}
-
-.hud-control:hover{
-  transform:translateY(-12px) scale(1.06) rotateX(6deg);
-  box-shadow:
-    0 0 60px rgba(255,0,60,.3),
-    inset 0 0 40px rgba(255,0,60,.2);
-}
-
-.hud-control:hover::before{
-  opacity:1;
-}
-
-.hud-note{
-  margin-top:60px;
-  font-size:13px;
-  letter-spacing:1px;
-  color:#888;
-}
-
-
-/* ===== FAQ ===== */
-.hud-faq{
-  max-width:950px;
-  margin-inline:auto;
-  display:flex;
-  flex-direction:column;
-  gap:22px;
-}
-
-.hud-faq-item{
-  background:rgba(12,14,28,.8);
-  border-radius:22px;
-  border:1px solid rgba(255,0,60,.25);
-  box-shadow:0 0 40px rgba(255,0,60,.1);
-  overflow:hidden;
-  backdrop-filter:blur(12px);
-  transition:.4s;
-}
-
-.hud-faq-item:hover{
-  box-shadow:0 0 60px rgba(255,0,60,.25);
-}
-
-.hud-faq-question{
-  display:flex;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:"icon name go" "icon desc go";
   align-items:center;
-  gap:18px;
-  padding:22px 26px;
-  cursor:pointer;
-}
-
-.hud-faq-question span{
-  font-size:18px;
-  color:#ff003c;
-  transition:.4s;
-}
-
-.hud-faq-question h4{
-  margin:0;
-  font-size:15px;
-  letter-spacing:1.2px;
-}
-
-.hud-faq-answer{
-  max-height:0;
-  overflow:hidden;
-  padding:0 26px;
-  color:#bbb;
-  line-height:1.7;
-  font-size:14px;
-  transition:max-height .5s ease, padding .5s ease, opacity .4s ease;
-  opacity:0;
-}
-
-.hud-faq-item.active .hud-faq-answer{
-  max-height:160px;
-  padding:0 26px 22px;
-  opacity:1;
-}
-
-.hud-faq-item.active .hud-faq-question span{
-  transform:rotate(90deg);
-}
-
-
-/* ===== UPDATES ===== */
-.hud-updates{
-  display: grid;
-  /* Fixed 240px tracks + justify-content:center keeps the row of cards
-     symmetric. auto-fit with 1fr tracks created 7 empty tracks on wide
-     screens, so the 4 cards all piled up on the left. */
-  grid-template-columns: repeat(4, 240px);
-  justify-content: center;
-  justify-items: center;
-  gap: 40px;
-}
-
-@media (max-width: 1199px) {
-  .hud-updates { grid-template-columns: repeat(2, 240px); }
-}
-
-@media (max-width: 560px) {
-  .hud-updates { grid-template-columns: 1fr; }
-}
-
-.hud-update-card{
-  position:relative;
-  padding:35px 25px;
-  border-radius:24px;
-  background:rgba(12,14,30,.8);
-  border:1px solid rgba(255,0,60,.25);
-  backdrop-filter:blur(12px);
-  box-shadow:
-    0 0 40px rgba(255,0,60,.12),
-    inset 0 0 30px rgba(255,0,60,.1);
-  text-decoration:none;
-  color:white;
-  transition:.45s cubic-bezier(.19,1,.22,1);
-  transform-style:preserve-3d;
-  height: 180px;    
-  width: 100%;
-  max-width: 240px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;       
-  text-align: center;
-}
-
-.hud-update-card::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:24px;
-  background:linear-gradient(120deg,transparent 30%,rgba(255,0,60,.35),transparent 70%);
-  opacity:0;
-  transition:.4s;
-}
-
-.hud-update-card:hover::after{opacity:1;}
-
-.hud-update-card:hover{
-  transform:translateY(-14px) scale(1.06) rotateX(7deg);
-  box-shadow:
-    0 0 70px rgba(255,0,60,.3),
-    inset 0 0 40px rgba(255,0,60,.2);
-}
-
-.hud-update-card h4{
-  margin:10px 0 6px;
-  letter-spacing:1.5px;
-}
-
-.hud-update-card span{
-  font-size:13px;
-  color:#aaa;
-}
-
-.hud-icon{
-  font-size:30px;
-  color:#ff003c;
-  text-shadow:0 0 20px #ff003caa;
-}
-
-
-/* ===== CONTACT ===== */
-.hud-contact{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:60px;
-  max-width:900px;
-  margin-inline:auto;
-  align-items:center;
-}
-
-@media(max-width:800px){
-  .hud-contact{grid-template-columns:1fr}
-}
-
-.hud-terminal{
-  background:#02030a;
-  border-radius:22px;
-  border:1px solid rgba(255,0,60,.25);
-  box-shadow:0 0 40px rgba(255,0,60,.15);
-  overflow:hidden;
-}
-
-.hud-terminal-header{
-  background:#060816;
-  padding:12px 18px;
-  font-size:12px;
-  letter-spacing:2px;
-  color:#ff003c;
-  border-bottom:1px solid rgba(255,0,60,.25);
-}
-
-.hud-terminal-body{
-  padding:30px 25px;
-  font-size:15px;
-  color:#ccc;
-}
-
-.hud-terminal-body a{
-  color:#ff003c;
-  text-decoration:none;
-}
-
-.hud-support{
-  background:rgba(12,14,30,.8);
-  border-radius:24px;
-  padding:35px 30px;
-  border:1px solid rgba(255,0,60,.25);
-  box-shadow:0 0 40px rgba(255,0,60,.15);
-}
-
-.hud-support h3{
-  margin-bottom:12px;
-  letter-spacing:2px;
-}
-
-.hud-support p{
-  color:#aaa;
-  margin-bottom:25px;
-}
-
-.hud-donate-btn{
-  display:inline-block;
-  padding:14px 36px;
-  border-radius:30px;
-  background:linear-gradient(135deg,#ff003c,#ff4f78);
-  color:white;
-  font-weight:600;
-  letter-spacing:2px;
-  text-decoration:none;
-  box-shadow:0 0 25px rgba(255,0,60,.5);
-  transition:.3s;
-}
-
-.hud-donate-btn:hover{
-  transform:translateY(-4px) scale(1.05);
-  box-shadow:0 0 40px rgba(255,0,60,.8);
-}
-
-/* ===== PREMIUM IMAGE CARDS ===== */
-.dual-grid{
-  max-width:800px;
-  margin:0 auto;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:40px;
-}
-
-.image-card{
-  position:relative;
-  border-radius:28px;
-  overflow:hidden;
-  box-shadow:0 0 50px rgba(0,0,0,.8);
-  transition:.5s cubic-bezier(.2,.8,.2,1);
-  text-decoration:none;
-}
-
-.image-card img{
-  width:100%;
+  gap:.15rem 1rem;
   height:100%;
-  object-fit:cover;
-  display:block;
-  transition:.6s ease;
+  padding:clamp(1.1rem,2.6vw,1.5rem);
+  background:linear-gradient(180deg,var(--surface),rgba(11,16,24,.3));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  transition:transform .35s var(--ease),border-color .3s,background-color .3s;
+}
+.channel__icon{
+  grid-area:icon;
+  display:grid;place-items:center;
+  width:46px;height:46px;
+  border-radius:var(--r-md);
+  background:var(--red-soft);border:1px solid rgba(255,45,85,.25);
+  color:var(--red);
+}
+.channel__icon svg{width:22px;height:22px}
+.channel__name{grid-area:name;font-family:var(--display);font-weight:800;font-size:.98rem;letter-spacing:.04em;color:var(--ink)}
+.channel__desc{grid-area:desc;font-family:var(--mono);font-size:var(--fs-small);color:var(--faint)}
+.channel__go{grid-area:go;color:var(--faint);transform:translateX(-4px);transition:transform .35s var(--ease),color .3s}
+.channel__go svg{width:1.05rem;height:1.05rem}
+@media (hover:hover){
+  html[data-fx="full"] .channel:hover{transform:translateY(-4px);border-color:rgba(255,45,85,.4)}
+  html[data-fx="full"] .channel:hover .channel__go{transform:none;color:var(--red)}
+}
+@media (hover:none){.channel:active{transform:scale(.985)}}
+
+/* =====================================================================
+   FAQ
+   ===================================================================== */
+.faq{max-width:820px;margin-inline:auto;display:grid;gap:.7rem}
+.faq__item{
+  background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-md);
+  overflow:hidden;
+  transition:border-color .3s,background-color .3s;
+}
+.faq__item.open{border-color:rgba(255,45,85,.38);background:var(--surface-2)}
+.faq__q{font:inherit}
+.faq__btn{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  width:100%;min-height:60px;
+  padding:clamp(.9rem,2.2vw,1.35rem) clamp(1rem,2.6vw,1.5rem);
+  text-align:left;
+  font-family:var(--display);font-weight:700;font-size:clamp(.9rem,2vw,1rem);
+  letter-spacing:.02em;color:var(--ink);
+}
+.faq__chev{flex:none;width:1.1rem;height:1.1rem;color:var(--red);transition:transform .35s var(--ease)}
+.faq__item.open .faq__chev{transform:rotate(90deg)}
+.faq__a{
+  max-height:0;overflow:hidden;
+  padding-inline:clamp(1rem,2.6vw,1.5rem);
+  color:var(--muted);font-size:.95rem;
+  opacity:0;
+  transition:max-height .45s var(--ease),opacity .35s ease,padding-bottom .45s var(--ease);
+}
+.faq__item.open .faq__a{max-height:24rem;opacity:1;padding-bottom:clamp(1rem,2.2vw,1.35rem)}
+
+/* =====================================================================
+   CONTACT
+   ===================================================================== */
+.contacts{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
+  gap:clamp(.8rem,2vw,1.2rem);
+  max-width:900px;margin-inline:auto;
+}
+.contact{
+  position:relative;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:1rem;
+  padding:clamp(1.2rem,2.8vw,1.6rem);
+  text-align:left;
+  background:linear-gradient(180deg,var(--surface),rgba(11,16,24,.3));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  overflow:hidden;
+  transition:transform .35s var(--ease),border-color .3s,background-color .3s;
+}
+.contact__icon{
+  display:grid;place-items:center;
+  width:48px;height:48px;
+  border-radius:var(--r-md);
+  background:var(--red-soft);border:1px solid rgba(255,45,85,.25);
+  color:var(--red);
+}
+.contact__icon svg{width:22px;height:22px}
+.contact__body{min-width:0}
+.contact__who{display:block;font-family:var(--mono);font-size:var(--fs-label);letter-spacing:.2em;color:var(--red)}
+.contact__addr{
+  display:block;margin-top:.2rem;
+  font-family:var(--mono);font-size:clamp(.82rem,2vw,.95rem);
+  color:var(--ink);
+  overflow-wrap:anywhere;
+}
+.contact__light{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 10px var(--green);
+}
+html[data-fx="full"] .contact__light{animation:blip 2.6s ease-in-out infinite}
+@media (hover:hover){html[data-fx="full"] .contact:hover{transform:translateY(-4px);border-color:rgba(255,45,85,.4)}}
+@media (hover:none){.contact:active{transform:scale(.985)}}
+
+.contact__copy{
+  position:absolute;inset:0;z-index:2;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  background:rgba(3,5,11,.94);
+  color:var(--green);
+  font-family:var(--mono);font-size:var(--fs-small);letter-spacing:.2em;
+  opacity:0;pointer-events:none;
+  transition:opacity .28s ease;
+}
+.contact__copy svg{width:1rem;height:1rem}
+.contact.copied .contact__copy{opacity:1}
+.contact.copied{border-color:rgba(37,245,168,.45)}
+
+.support{
+  max-width:560px;margin:clamp(2.5rem,6vw,4rem) auto 0;
+  text-align:center;
+  padding:clamp(1.8rem,4vw,2.8rem);
+  background:linear-gradient(180deg,var(--surface),rgba(11,16,24,.2));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+}
+.support h3{font-size:1.2rem;letter-spacing:.1em;margin-bottom:.8rem}
+.support p{margin-bottom:1.8rem;font-size:.96rem}
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+.footer{background:var(--void-deep);border-top:1px solid var(--line);padding-block:clamp(2.5rem,6vw,3.5rem);text-align:center}
+.footer p{font-size:var(--fs-small);color:var(--faint);line-height:1.9}
+
+/* =====================================================================
+   MODALS
+   ===================================================================== */
+.modal{
+  position:fixed;inset:0;z-index:200;
+  display:grid;place-items:center;
+  padding:var(--pad-x);
+  background:rgba(2,3,8,.86);
+}
+.modal[hidden]{display:none}
+.modal__box{
+  position:relative;
+  width:min(440px,100%);
+  max-height:88vh;overflow:auto;
+  padding:clamp(1.8rem,4vw,2.6rem);
+  text-align:center;
+  background:var(--surface);
+  border:1px solid rgba(255,45,85,.35);
+  border-radius:var(--r-lg);
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+  animation:modalIn .3s var(--ease);
+}
+.modal__box--video{width:min(920px,100%);padding:0;overflow:hidden;aspect-ratio:16/9;background:#000}
+@keyframes modalIn{from{opacity:0;transform:translate3d(0,14px,0) scale(.97)}to{opacity:1;transform:none}}
+.modal__box h2{font-size:1.3rem;letter-spacing:.08em;color:var(--red);margin-bottom:.9rem}
+.modal__box p{font-size:.94rem;margin-bottom:1.6rem}
+.modal__note{margin:1.2rem 0 0;font-size:var(--fs-small);color:var(--faint)}
+.modal__video{width:100%;height:100%}
+.modal__video iframe{width:100%;height:100%;border:0}
+.modal__close{
+  position:absolute;top:.6rem;right:.6rem;z-index:3;
+  display:grid;place-items:center;
+  width:44px;height:44px;
+  border-radius:50%;
+  background:rgba(255,45,85,.18);
+  border:1px solid rgba(255,45,85,.5);
+  color:var(--red);
+  transition:background-color .25s,color .25s,transform .25s var(--ease);
+}
+.modal__close svg{width:1.1rem;height:1.1rem}
+@media (hover:hover){.modal__close:hover{background:var(--red);color:#fff;transform:scale(1.06)}}
+body.modal-open{overflow:hidden}
+
+/* =====================================================================
+   CONTAINMENT
+   `content-visibility: auto` is used on exactly two elements: the demo
+   portal and the footer. Both are full-height, self-contained blocks whose
+   real height barely changes with the viewport, so a single honest
+   placeholder is safe and the scrollbar never lurches.
+
+   It is deliberately NOT used on the content sections. Their height swings
+   by several hundred pixels between a 360px phone and a wide desktop, and
+   any placeholder that is wrong makes the page grow under the reader as
+   they scroll — far worse than the layout it would have saved. Off-screen
+   sections are already effectively free: nothing in them animates
+   (script.js gates that) and every image is `loading="lazy"`.
+   ===================================================================== */
+.omega{contain-intrinsic-size:auto 780px}
+.footer{contain-intrinsic-size:auto 240px}
+
+@supports (content-visibility:auto){
+  .omega,.footer{content-visibility:auto}
 }
 
-.image-overlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,.1));
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  padding:26px;
-  color:white;
-  opacity:.9;
-  transition:.5s ease;
+/* Ambient decoration is only composited while it can actually be seen. */
+.hero:not(.in-view) .hero__char img,
+.hero:not(.in-view) .hero__glow,
+.hero:not(.in-view) .hero__ring,
+.omega:not(.in-view) .cosmos__nebula,
+.omega:not(.in-view) .cosmos__stars,
+.omega:not(.in-view) .cosmos__rays,
+.omega:not(.in-view) .energy-ring,
+.omega:not(.in-view) .singularity-vortex i{animation:none}
+
+/* =====================================================================
+   NARROW SCREENS
+   One column, one rhythm, one centre line. This is where the page has to
+   feel like a single ordered document rather than a stack of cards.
+   ===================================================================== */
+@media (max-width:699px){
+  :root{--section-y:3.25rem;--anchor-gap:16px}
+
+  .section__head{margin-bottom:1.75rem}
+  .section__title{font-size:clamp(1.45rem,6.4vw,1.9rem)}
+
+  /* the original copy carries hard line breaks; let them re-wrap on a phone */
+  .section__sub{font-size:.95rem;line-height:1.6}
+  .section__sub br{content:none}
+
+  .stats{gap:.6rem}
+  .stat{padding:1.1rem .35rem}
+
+  .features,.cast,.channels,.contacts{grid-template-columns:1fr}
+  .feature{padding:1.25rem}
+  .feature__icon{margin-bottom:.85rem}
+
+  .cast{gap:.85rem}
+  .character{grid-template-columns:92px minmax(0,1fr);gap:.9rem;padding:1rem}
+
+  .keys{gap:.5rem}
+  .key{flex:0 1 30%;padding:.85rem .3rem}
+  .key svg{width:19px;height:19px}
+  .key kbd{font-size:.7rem;line-height:1.3}
+
+  .carousel__stage{padding-inline:max(.75rem, calc((100% - 86vw) / 2))}
+
+  .contact{grid-template-columns:auto minmax(0,1fr);gap:.85rem;padding:1rem}
+  .contact__light{display:none}
+
+  .artifact{width:min(74vw,300px)}
+  .ring-mid{inset:22px}
+  .ring-inner{inset:44px}
+  .singularity-vortex{inset:70px}
+  .core{transform:translateY(24px)}
+
+  .modal__box--video{aspect-ratio:16/9}
 }
 
-.image-overlay h3{
-  margin:0;
-  font-size:20px;
-  color:#ff003c;
+@media (max-width:380px){
+  .brand__word{font-size:.68rem}
+  .keys{grid-template-columns:repeat(2,1fr)}
 }
 
-.image-overlay p{
-  margin-top:6px;
-  font-size:13px;
-  color:#ddd;
-}
-
-.image-card:hover{
-  transform:translateY(-16px) scale(1.05);
-  box-shadow:0 0 70px #ff003c99;
-}
-
-.image-card:hover img{
-  transform:scale(1.12);
-}
-
-.image-card:hover .image-overlay{
-  background:linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,.15));
-}
-
-
-/* ===== LUXURY SECURE TRANSMISSION ===== */
-.contact-luxury {
-  background:
-    radial-gradient(circle at top, rgba(255,0,60,.08), transparent 70%),
-    linear-gradient(180deg,#02030a,#050716);
-  padding-bottom: 120px;
-}
-
-.lux-row {
-  max-width: 980px;
-  margin: 0 auto 70px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
-}
-
-/* Mail Card Design */
-.lux-mail {
-  position: relative;
-  padding: 25px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 0, 60, 0.3);
-  backdrop-filter: blur(20px);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  text-decoration: none;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  overflow: hidden;
-}
-
-.lux-mail::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent, rgba(255, 0, 60, 0.1), transparent);
-  transform: translateX(-100%);
-  transition: 0.5s;
-}
-
-.lux-mail:hover::before {
-  transform: translateX(100%);
-}
-
-.lux-mail:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 0, 60, 0.08);
-  box-shadow: 0 10px 40px rgba(255, 0, 60, 0.15);
-  border-color: #ff003c;
-}
-
-.mail-icon {
-  font-size: 32px;
-  filter: drop-shadow(0 0 10px rgba(255,0,60,0.5));
-}
-
-.mail-info {
-  flex: 1;
-}
-
-.lux-mail span {
-  display: block;
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: #ff003c;
-  margin-bottom: 4px;
-  font-weight: bold;
-}
-
-.lux-mail strong {
-  display: block;
-  font-size: 15px;
-  color: #fff;
-  font-family: 'Share Tech Mono', monospace;
-  word-break: break-all;
-}
-
-/* Status Light (Green Dot) */
-.status-light {
-  width: 8px;
-  height: 8px;
-  background: #00ff88;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #00ff88;
-  animation: blinkStatus 2s infinite;
-}
-
-@keyframes blinkStatus {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-
-/* Support Section */
-.lux-support {
-  max-width: 600px;
-  margin: auto;
-  text-align: center;
-  padding: 40px;
-  border-radius: 24px;
-  background: rgba(10, 10, 20, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 50px rgba(0,0,0,0.5);
-}
-
-.lux-support h3 {
-  color: #fff;
-  letter-spacing: 4px;
-  margin-bottom: 10px;
-  text-shadow: 0 0 15px rgba(255,255,255,0.3);
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
-  flex-wrap: wrap;
-}
-
-.lux-btn {
-  padding: 14px 30px;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 2px;
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Donate Button Style */
-.lux-btn.donate {
-  background: linear-gradient(135deg, #ff003c, #b3002a);
-  color: white;
-  box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
-}
-.lux-btn.donate:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 40px rgba(255, 0, 60, 0.8);
-}
-
-/* Discord Button Style */
-.lux-btn.discord {
-  background: #5865F2;
-  color: white;
-  box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
-}
-.lux-btn.discord:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 40px rgba(88, 101, 242, 0.8);
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .lux-row {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .lux-mail,
-  .lux-donate-card {
-    padding: 20px;
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .status-light {
-    display: none;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .lux-btn {
-    width: 100%;
-  }
-}
-
-
-.copy-msg {
-  position: absolute;
-  inset: 0;
-  background: rgba(2, 3, 10, 0.9); 
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #00ff88;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 18px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  opacity: 0;
-  pointer-events: none; 
-  transition: opacity 0.3s ease;
-  border-radius: 18px;
-  z-index: 10;
-}
-
-
-.copy-msg.visible {
-  opacity: 1;
-}
-
-
-.lux-mail.copied {
-  border-color: #00ff88;
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-}
-
-
-.hud-update-card.hud-update-wide{
-  /* The old `width: calc(200% + 40px)` rule pushed this card outside the
-     grid and caused horizontal overflow on narrow screens. */
-  grid-column: 1 / -1;
-  width: min(520px, 100%);
-  max-width: 520px;
-  justify-self: center;
-}
-
-/* ===== TRAILER MODAL ===== */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 200;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay.active {
-  display: flex;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+/* =====================================================================
+   PREFERENCES
+   ===================================================================== */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
   }
 }
 
-.modal-content {
-  position: relative;
-  background: #0b0f1a;
-  border: 2px solid #ff003c;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 800px;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  box-shadow: 0 0 30px rgba(255, 0, 60, 0.3);
-  animation: slideIn 0.3s ease;
+@media (prefers-reduced-transparency:reduce){
+  html[data-fx] .nav{backdrop-filter:none;-webkit-backdrop-filter:none}
 }
 
-@keyframes slideIn {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.video-container {
-  width: 100%;
-  height: 100%;
-}
-
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 0, 60, 0.2);
-  border: 2px solid #ff003c;
-  color: #ff003c;
-  font-size: 24px;
-  cursor: pointer;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 201;
-}
-
-.modal-close:hover {
-  background: #ff003c;
-  color: #0b0f1a;
-  transform: scale(1.1);
-}
-
-@media (max-width: 768px) {
-  .modal-content {
-    width: 95%;
-    max-width: 100%;
-  }
-}
-
-/* PAYPAL DONATION CARD */
-.lux-donate-card {
-  position: relative;
-  padding: 25px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 0, 60, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  overflow: hidden;
-}
-
-.lux-donate-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent, rgba(255, 0, 60, 0.1), transparent);
-  transform: translateX(-100%);
-  transition: 0.5s;
-  pointer-events: none;
-}
-
-.lux-donate-card:hover::before {
-  transform: translateX(100%);
-}
-
-.lux-donate-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 0, 60, 0.08);
-  box-shadow: 0 10px 40px rgba(255, 0, 60, 0.15);
-  border-color: #ff003c;
-}
-
-.lux-donate-card-btn,
-.paypal-donate-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 30px;
-  padding: 13px 22px;
-  background: linear-gradient(135deg, #ff003c, #b3002a);
-  color: #fff;
-  text-decoration: none;
-  font: inherit;
-  font-weight: 700;
-  letter-spacing: 1.8px;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(255, 0, 60, 0.35);
-  transition: 0.3s ease;
-  white-space: nowrap;
-  position: relative;
-  z-index: 2;
-}
-
-.lux-donate-card-btn:hover,
-.paypal-donate-link:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 0 35px rgba(255, 0, 60, 0.7);
-}
-
-.paypal-donate-link {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 6px;
-}
-
-.donate-note {
-  margin: 16px 0 0;
-  color: #777;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-/* DONATE MODAL EXTRA */
-.donate-content {
-  max-width: 420px;
-  padding: 40px 30px;
-  text-align: center;
-  aspect-ratio: auto;
-}
-
-/* Donation-email UI removed: donations now use PayPal. */
-
-/* ===== MOBILE HERO / ABOUT SECTION FIXES ===== */
-@media (max-width: 768px) {
-    .hero {
-        flex-direction: column;
-        justify-content: flex-start;
-        padding: 100px 25px 50px;
-        gap: 40px;
-        min-height: auto;
-    }
-    .hero-text {
-        width: 100%;
-        text-align: center;
-    }
-    .hero-text h1 {
-        font-size: 46px;
-    }
-    .hero-text h2 {
-        font-size: 16px;
-    }
-    .hero-text p {
-        font-size: 15px;
-        margin: 15px 0 25px;
-    }
-    .buttons .btn {
-        margin: 6px;
-        padding: 10px 24px;
-        font-size: 14px;
-    }
-    .hero-img {
-        width: 100%;
-        height: 320px;
-        order: 2;
-    }
-    .hero-img .char {
-        width: 220px;
-    }
-    .glow {
-        width: 260px;
-        height: 260px;
-    }
-    .dimension-ring {
-        width: 280px;
-        height: 280px;
-    }
-}
-/* ===== MOBILE NAVBAR & GLOBAL SCALING OVERRIDES ===== */
-@media (max-width: 768px) {
-	/* 1. Navbar Container Padding & Height */
-	.navbar {
-		padding: 6px 14px;
-		height: 56px;
-	}
-
-	/* 2. Icon-only Laymon sprite in the top bar (icon stays 44px) */
-	.portfolio-link {
-		padding: 3px;
-		margin-left: 0;
-	}
-
-	.portfolio-link img { width: 44px; height: 44px; }
-
-	/* 3. Navigation is handled by the hamburger menu defined in the 900px block.
-	   The old inline 10px links gave ~10px tall tap targets, well under the
-       44px minimum, and wrapped into a cramped cluster on portrait screens. */
-	.navbar nav.open a {
-		font-size: 13px;
-	}
-
-	/* 4. General Element Scaling for Mobile */
-	.hud-title {
-		font-size: 26px;
-		letter-spacing: 2px;
-	}
-
-	.hud-subtitle {
-		font-size: 12px;
-		margin-bottom: 30px;
-	}
-
-	.hud-section {
-		padding: 60px 15px;
-	}
-
-	.section {
-		padding: 50px 20px;
-	}
-
-	.hud-controls {
-		grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-		gap: 15px;
-	}
-
-	.hud-control {
-		padding: 15px 10px;
-	}
-
-	.hud-control span {
-		font-size: 24px;
-	}
-
-	.hud-control h4 {
-		font-size: 13px;
-	}
-
-	.hud-control p {
-		font-size: 11px;
-	}
-
-	.hud-updates {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 15px;
-	}
-
-	.hud-update-card {
-		width: 100%;
-		height: 140px;
-		padding: 15px 10px;
-	}
-
-	.hud-update-card.hud-update-wide {
-		width: 100%;
-		max-width: none;
-		grid-column: 1 / -1;
-	}
-
-	.hud-faq-question {
-		padding: 14px 18px;
-	}
-
-	.hud-faq-question h4 {
-		font-size: 13px;
-	}
-
-	.top-readout h1 {
-		font-size: 1.6rem;
-		letter-spacing: 4px;
-	}
-
-	.artifact-container {
-		width: 280px;
-		height: 280px;
-	}
-}
-
-/* ===== TOUCH SUPPORT =====
-   Hover-only affordances never fire on a phone, so interactive elements had
-   no visible feedback at all when tapped. */
-@media (hover: none) and (pointer: coarse) {
-	.card:active,
-	.hud-update-card:active,
-	.hud-control:active,
-	.lux-mail:active,
-	.character:active,
-	.cinema-card:active {
-		transform: scale(.97);
-	}
-
-	.btn.main:active { box-shadow: 0 0 26px #ff003c; }
-	.btn.ghost:active { box-shadow: 0 0 20px #ff003c; }
-
-	.modal-close { width: 44px; height: 44px; }
-	.hud-faq-question { min-height: 44px; }
-}
-
-/* ===== SMALL PHONE REFINEMENT ===== */
-@media (max-width: 480px) {
-	.hero { padding: 90px 18px 40px; }
-
-	.stats { gap: 22px; flex-wrap: wrap; }
-	.stats span { font-size: 28px; }
-
-	.carousel-container { height: 300px; }
-	.cinema-card { width: 250px; height: 145px; }
-	.cinema-card.right-1 { transform: translate3d(120px, 0, -100px) scale(.8)  rotateY(-14deg); }
-	.cinema-card.right-2 { transform: translate3d(210px, 0, -200px) scale(.65) rotateY(-22deg); }
-	.cinema-card.left-1  { transform: translate3d(-120px, 0, -100px) scale(.8)  rotateY(14deg); }
-	.cinema-card.left-2  { transform: translate3d(-210px, 0, -200px) scale(.65) rotateY(22deg); }
-
-	.hud-updates { grid-template-columns: 1fr; }
-	.hud-update-card.hud-update-wide { grid-column: 1; }
-
-	.modal-content { width: 94%; }
-	.video-container { height: 56vh; }
-
-	.omega-wrapper { height: 88vh; }
-	.artifact-container { width: 240px; height: 240px; }
-	.ring-mid  { inset: 22px; }
-	.ring-inner { inset: 44px; }
-	.singularity-vortex { inset: 70px; }
+@media print{
+  .nav,.modal,.hero__cue{display:none}
+  body{background:#fff;color:#000}
 }

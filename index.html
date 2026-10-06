@@ -1,578 +1,581 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-fx="full">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PARALLOX – 2D RPG Game</title>
 <meta name="description" content="PARALLOX is a pixel-style 2D action RPG by Laymon Games where the hero is also the villain. Explore parallel timelines and dimensions. Free demo available on PC and Android.">
+<meta name="theme-color" content="#05070e">
+<meta name="color-scheme" content="dark">
 <meta name="google-site-verification" content="google16d0f05aad171efc.html" />
 
+<meta property="og:type" content="website">
 <meta property="og:title" content="PARALLOX – 2D RPG Game">
 <meta property="og:description" content="The game where the hero is also the villain! Explore different timelines and dimensions.">
 <meta property="og:image" content="https://laymongames.github.io/parallox/assets/hero.webp">
 <meta property="og:url" content="https://laymongames.github.io/parallox/">
+<meta name="twitter:card" content="summary_large_image">
 
-<link rel="icon" href="assets/LL.png" type="image/png">
+<!-- 3 KB icon instead of the 105 KB LL.png, plus a real touch icon. -->
+<link rel="icon" href="assets/favicon.png" type="image/png" sizes="any">
+<link rel="apple-touch-icon" href="assets/favicon.png">
 
-<!-- Fonts are served from this repository: no external, render-blocking request. -->
-<link rel="preload" href="assets/fonts/orbitron.woff2" as="font" type="font/woff2">
-<link rel="preload" href="assets/fonts/share-tech-mono.woff2" as="font" type="font/woff2">
+<!-- Both faces ship with the repository: no external request, no render block. -->
+<link rel="preload" href="assets/fonts/orbitron.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/hero.webp" as="image" type="image/webp" fetchpriority="high">
+
 <link rel="stylesheet" href="style.css">
+
+<!-- Runs before first paint so a weak device never composes a heavy frame it
+     can't sustain. Kept inline and tiny on purpose. -->
+<script>
+(function () {
+  var d = document.documentElement;
+  var lite = false;
+  try {
+    if (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ""))) lite = true;
+  } catch (e) {}
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) lite = true;
+  if (navigator.deviceMemory && navigator.deviceMemory <= 4) lite = true;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) lite = true;
+  if (window.matchMedia("(prefers-reduced-transparency: reduce)").matches) lite = true;
+  d.setAttribute("data-fx", lite ? "lite" : "full");
+})();
+</script>
 </head>
 
 <body id="top">
 
-    <!-- ===== NAVBAR ===== -->
-    <header class="navbar">
-        <!-- Order is deliberate: on desktop the hamburger is hidden so the
-             portfolio button sits where the logo used to be (top left) and the
-             nav links stay on the right. On mobile the nav collapses into a
-             drawer, leaving the hamburger on the left and the portfolio on the
-             right. -->
-        <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mainNav">
-            <span></span><span></span><span></span>
-        </button>
+<a class="skip-link" href="#main">Skip to content</a>
 
-        <a class="portfolio-link" href="https://laymongames.github.io/portfolio/" target="_blank" rel="noopener">
-            <!-- icon-only pixel sprite: text removed, size increased -->
-            <img src="assets/originals/laymon.png" alt="Laymon Games portfolio" width="44" height="44">
-        </a>
+<!-- ════════════════ ICON SPRITE ════════════════
+     Real icons, inlined so they cost zero requests:
+       · Lucide (ISC licence) — the feather icon set
+       · Simple Icons (CC0)    — brand marks for Discord and YouTube
+     Both scale to any size, inherit currentColor, and need no webfont,
+     so there is no extra request and nothing to flash in. -->
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></symbol>
+  <symbol id="i-footprints" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></symbol>
+  <symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.341 6.484A10 10 0 0 1 10.266 21.85"/><path d="M3.659 17.516A10 10 0 0 1 13.74 2.152"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/></symbol>
+  <symbol id="i-sword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 19-6-6"/><path d="m5 21-2-2"/><path d="m8 16-4 4"/><path d="M9.5 17.5 20.414 6.586A2 2 0 0 0 21 5.172V3h-2.172a2 2 0 0 0-1.414.586L6.5 14.5"/></symbol>
+  <symbol id="i-skull" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol>
+  <symbol id="i-gamepad-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></symbol>
+  <symbol id="i-satellite-dish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 12a6 6 0 0 0-6-6"/><path d="M2.824 10.459a8 8 0 0 0 10.717 10.717c.558-.276.623-1.012.183-1.452l-9.448-9.448c-.44-.44-1.176-.375-1.452.183"/><path d="M22 12A10 10 0 0 0 12 2"/><path d="m9 15 4-4"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></symbol>
+  <symbol id="i-volume-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></symbol>
+  <symbol id="i-youtube" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></symbol>
+  <symbol id="i-discord" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.515.0699.0699 0 0 0-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 0 0 .0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 0 1-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 0 1 .0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 0 1-.0066.1276 12.2986 12.2986 0 0 1-1.873.8914.0766.0766 0 0 0-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
+</svg>
 
-        <nav id="mainNav">
-            <a href="#top">HOME</a>
-            <a href="#hero">ABOUT</a>
-            <a href="#omega-singularity">DEMO</a>
-            <a href="#updates">UPDATES</a>
-            <a href="#faq">FAQ</a>
-            <a href="#contact">CONTACT</a>
-        </nav>
-    </header>
+<!-- ════════════════ NAVBAR ════════════════
+     The brand is the Laymon Games portfolio link (as it was originally).
+     On mobile the hamburger leads and the brand trails it; on desktop the
+     hamburger is hidden and the links sit on the right. -->
+<header class="nav" id="nav">
+  <div class="nav__progress" aria-hidden="true"><i id="navProgress"></i></div>
 
-    <!-- ===== VIDEO INTRO ===== -->
-    <!-- The poster paints instantly; the video is only fetched once it is on screen. -->
-    <section class="video-intro" id="video-intro">
-        <video id="introVideo" muted loop playsinline preload="none" poster="assets/video-poster.webp">
-            <source src="assets/background_opt.mp4" type="video/mp4">
-        </video>
-    </section>
+  <button class="nav__toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mainNav">
+    <span></span><span></span><span></span>
+  </button>
 
+  <a class="brand" href="https://laymongames.github.io/portfolio/" target="_blank" rel="noopener">
+    <img src="assets/originals/laymon.png" alt="" width="44" height="44" decoding="async">
+    <span class="brand__word">Laymon Games</span>
+  </a>
 
+  <nav id="mainNav">
+    <a href="#top">HOME</a>
+    <a href="#about">ABOUT</a>
+    <a href="#omega-singularity">DEMO</a>
+    <a href="#updates">UPDATES</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">CONTACT</a>
+  </nav>
+</header>
 
-    <!-- ===== HERO ===== -->
-    <section class="hero" id="hero">
-        <div class="hero-text">
-            <h2>2D ACTION RPG GAME</h2>
-            <h1 class="hero-title">
-                ENTER <br>
-                <span class="para-blue">PARA</span><span class="llox-red">LLOX</span>
-            </h1>
+<main id="main">
 
-            <p>
-                The game where the hero is also the villain! Explore different timelines
-                and dimensions! Be the hero who will save the day, but also the villain who’s
-                going to ruin it..
-            </p>
-            <div class="buttons">
-                <a class="btn main" href="#omega-singularity">Play Demo</a>
-                <button class="btn ghost" type="button" onclick="openTrailerModal()">Watch Trailer</button>
-            </div>
-        </div>
-
-        <div class="hero-img parallax">
-            <img class="char" src="assets/hero.webp" alt="Parallox Character" width="640" height="672" fetchpriority="high" decoding="async">
-            <div class="glow"></div>
-            <div class="dimension-ring"></div>
-        </div>
-
-    </section>
-
-    <!-- ===== CINEMATIC CAROUSEL ===== -->
-    <section class="cinema-section" id="media">
-        <h2 class="cinema-title">GAME MOMENTS</h2>
-        <p class="cinema-subtitle">
-            Mike is our main character, he grows up in a harsh environment and slowly loses his mind.<br>Filled with hate, he's now seeking revenge.
-            One day, an incurable illness strikes the town, and Mike goes into a coma.<br>Desperate to save him, his scientist father resorts to his last option.. “Project 13”.
-
-        </p>
-
-        <div class="carousel-container" id="carousel">
-
-            <div class="cinema-card" onclick="selectCinemaCard(0)" role="button" tabindex="0" aria-label="Game moment 1">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot1.webp" class="poster" alt="Parallox gameplay screenshot 1" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title"></span>
-                    <span class="card-info"></span>
-                </div>
-            </div>
-
-            <div class="cinema-card" onclick="selectCinemaCard(1)" role="button" tabindex="0" aria-label="Game moment 2">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot2.webp" class="poster" alt="Parallox gameplay screenshot 2" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title"></span>
-                    <span class="card-info"></span>
-                </div>
-            </div>
-
-            <div class="cinema-card" onclick="selectCinemaCard(2)" role="button" tabindex="0" aria-label="Game moment 3: The Past">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot3.webp" class="poster" alt="Parallox gameplay screenshot 3" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title">THE PAST</span>
-                    <span class="card-info">back when things were normal...</span>
-                </div>
-            </div>
-
-            <div class="cinema-card" onclick="selectCinemaCard(3)" role="button" tabindex="0" aria-label="Game moment 4: Parallox">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot4.webp" class="poster" alt="Parallox gameplay screenshot 4" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title">Parallox</span>
-                    <span class="card-info">where the hero is also the villain</span>
-                </div>
-            </div>
-
-            <div class="cinema-card" onclick="selectCinemaCard(4)" role="button" tabindex="0" aria-label="Game moment 5: The Present">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot5.webp" class="poster" alt="Parallox gameplay screenshot 5" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title">THE PRESENT</span>
-                    <span class="card-info">a broken relationship between a son and a father</span>
-                </div>
-            </div>
-
-            <div class="cinema-card" onclick="selectCinemaCard(5)" role="button" tabindex="0" aria-label="Game moment 6">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot6.webp" class="poster" alt="Parallox gameplay screenshot 6" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title"></span>
-                    <span class="card-info"></span>
-                </div>
-            </div>
-
-            <div class="cinema-card" onclick="selectCinemaCard(6)" role="button" tabindex="0" aria-label="Game moment 7">
-                <div class="top-bar">
-                    <img src="assets/logo-mark.webp" class="logo" alt="Parallox emblem" width="64" height="67" loading="lazy" decoding="async">
-                </div>
-                <img src="assets/Screenshot7.webp" class="poster" alt="Parallox gameplay screenshot 7" width="960" height="540" loading="lazy" decoding="async">
-                <div class="card-content">
-                    <span class="card-title"></span>
-                    <span class="card-info"></span>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-
-
-    <!-- ===== ABOUT ===== -->
-    <section id="about" class="section dark">
-        <h2>WELCOME TO A PARALLEL REALITY</h2>
-        <p>
-            Every dimension has a version of you, each version is special in its own way!
-        </p>
-
-        <div class="stats">
-            <div><span>1</span> Person</div>
-            <div><span>8</span> Variants</div>
-            <div><span>1</span> Mission</div>
-        </div>
-    </section>
-
-    <!-- ===== FEATURES ===== -->
-    <section id="features" class="section">
-        <h2>CORE FEATURES</h2>
-        <div class="cards">
-            <div class="card">🌀 Dimension Switching</div>
-            <div class="card">⚔️ Dynamic 2D Combat</div>
-            <div class="card">🧠 DEEP LORE</div>
-            <div class="card">⏳ Time Manipulation</div>
-        </div>
-    </section>
-
-
-
-    <!-- ===== CHARACTERS ===== -->
-    <section id="characters" class="section dark">
-        <h2>MAIN CHARACTERS</h2>
-        <p class="subtitle">The full game’s playable characters, each has a unique role in the game.</p>
-
-        <div class="characters">
-
-            <div class="character" onclick="showCharacter(this)" data-voice="assets/mikievoice.mp3">
-                <img src="assets/young_mike3-export.gif" alt="Mikie character animation" width="64" height="64" loading="lazy" decoding="async">
-                <h3>MIKIE</h3>
-                <p class="desc">
-                    Our smiley little boy! But don’t the let looks fool you, this boy has the bravery of a man inside him!
-                </p>
-            </div>
-
-            <div class="character" onclick="showCharacter(this)" data-voice="assets/mikevoice.mp3">
-                <img src="assets/mike.gif" alt="Mike character animation" width="64" height="64" loading="lazy" decoding="async">
-                <h3>MIKE</h3>
-                <p class="desc">
-                    Sounds familiar? Yes, that’s the same person on the left. It’s Mikie, but.. older?! Get ready to meet insanity in person! But watch out! Mike has an evil plan to destroy the town!
-                </p>
-            </div>
-
-            <div class="character" onclick="showCharacter(this)" data-voice="assets/waltervoice.mp3">
-                <img src="assets/walter.gif" alt="Walter character animation" width="64" height="64" loading="lazy" decoding="async">
-                <h3>WALTER</h3>
-                <p class="desc">
-                    Mike’s father, and the town’s local scientist. He became the most hated person in town after the incident happened..
-                </p>
-            </div>
-
-        </div>
-
-        <div id="character-info">
-            <h3 id="char-name"></h3>
-            <p id="char-text"></p>
-        </div>
-    </section>
-
-
-    <section id="omega-singularity" class="omega-wrapper">
-        <div class="omega-root">
-
-            <div class="event-horizon-flash"></div>
-
-            <div class="cosmos-container">
-                <div class="nebula-layer"></div>
-                <div class="star-dust"></div>
-                <div class="god-rays"></div>
-            </div>
-
-            <div class="hud-frame"></div>
-
-            <div class="top-readout">
-                <h1>PARALLOX DEMO</h1>
-                <div class="sub">The free demo is available <span>for PC and Android on:</span></div>
-            </div>
-
-            <div class="artifact-container" id="artifact">
-                <div class="mechanism-core" onclick="engateSingularity()">
-                    <div class="energy-ring ring-outer"></div>
-                    <div class="energy-ring ring-mid"></div>
-                    <div class="energy-ring ring-inner"></div>
-                    <div class="singularity-vortex">
-                        <div class="vortex-energy"></div>
-                    </div>
-                    <div class="activation-label" id="action-text">Project 13</div>
-                </div>
-            </div>
-
-            <div class="readout-bottom" id="system-status">
-                WAITING FOR USER INPUT...
-            </div>
-
-        </div>
-    </section>
-
-
-    <!-- TRAILER MODAL -->
-    <!-- The iframe has no src until the modal is opened, so YouTube is never
-        downloaded on a normal page visit. -->
-    <div id="trailerModal" class="modal-overlay" onclick="closeTrailerModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeTrailerModal()" aria-label="Close trailer">✕</button>
-            <div class="video-container">
-                <iframe id="trailerVideo" width="100%"
-                        height="100%"
-                        title="PARALLOX Trailer"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                </iframe>
-            </div>
-        </div>
+  <!-- ════════════════ HERO ════════════════
+       The intro clip became the hero's background layer instead of a
+       separate 120vh block, so the first screen is the game instead of a
+       video with nothing on it. The poster that used to 404 is gone; the
+       CSS wash underneath is the intentional pre-load state. -->
+  <section class="hero" id="hero">
+    <div class="hero__bg" aria-hidden="true">
+      <!-- data-src only: script.js attaches the <source> when a capable
+           device actually reaches this section, so a phone never downloads
+           the 4K clip. -->
+      <video id="introVideo" muted loop playsinline preload="none" disablepictureinpicture
+             data-src="assets/background_opt.mp4"></video>
+      <div class="hero__scrim"></div>
+      <div class="hero__grid"></div>
     </div>
 
+    <div class="hero__inner shell">
+      <h2 class="hero__kicker">2D ACTION RPG GAME</h2>
 
-    <!-- ════════════════ HUD CONTROLS ════════════════ -->
-    <section id="controls" class="hud-section dark">
-        <div class="hud-frame-glow"></div>
+      <h1 class="hero__title">
+        ENTER<br><span class="blue">PARA</span><span class="red">LLOX</span>
+      </h1>
 
-        <h2 class="hud-title">GAME CONTROLS</h2>
-        <p class="hud-subtitle">These are the already existing controls in demo, full game may have some changes.</p>
+      <p class="hero__lede">
+        The game where the hero is also the villain! Explore different timelines
+        and dimensions! Be the hero who will save the day, but also the villain
+        who’s going to ruin it..
+      </p>
 
-        <div class="hud-controls">
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="#omega-singularity">Play Demo</a>
+        <button class="btn btn--ghost" type="button" data-open-trailer>
+          <svg aria-hidden="true"><use href="#i-play"/></svg>
+          Watch Trailer
+        </button>
+      </div>
+    </div>
 
-            <div class="hud-control">
-                <span>▲</span>
-                <h4>UP</h4>
-                <p>Arrow Up / W</p>
-            </div>
+    <!-- The LL. assets/hero.webp is a fully opaque 640x672 frame whose
+         artwork only occupies the middle ~45% of the width, so the raw image
+         pushed the character off-centre inside the ring. .hero__char crops
+         the black margins away. -->
+    <div class="hero__art" aria-hidden="true">
+      <div class="hero__ring"></div>
+      <div class="hero__glow"></div>
+      <div class="hero__char"><img src="assets/hero.webp" alt="" width="640" height="672" fetchpriority="high" decoding="async"></div>
+    </div>
 
-            <div class="hud-control">
-                <span>▼</span>
-                <h4>DOWN</h4>
-                <p>Arrow Down / S</p>
-            </div>
-
-            <div class="hud-control">
-                <span>◄</span>
-                <h4>LEFT</h4>
-                <p>Arrow Left / A</p>
-            </div>
-
-            <div class="hud-control">
-                <span>►</span>
-                <h4>RIGHT</h4>
-                <p>Arrow Right / D</p>
-            </div>
-
-            <div class="hud-control">
-                <span>✔</span>
-                <h4>ACCEPT</h4>
-                <p>Enter / Z</p>
-            </div>
-
-            <div class="hud-control">
-                <span>✖</span>
-                <h4>CANCEL</h4>
-                <p>Backspace / X</p>
-            </div>
-
-            <div class="hud-control">
-                <span>☰</span>
-                <h4>MENU</h4>
-                <p>Space / C</p>
-            </div>
-
-            <div class="hud-control">
-                <span>⚡</span>
-                <h4>SPRINT</h4>
-                <p>Shift</p>
-            </div>
-
-            <div class="hud-control">
-                <span>🕺</span>
-                <h4>DANCE</h4>
-                <p>E</p>
-            </div>
-
-            <div class="hud-control">
-                <span>🗺️</span>
-                <h4>MAP</h4>
-                <p>M</p>
-            </div>
-
-        </div>
-
-        <div class="hud-note">
-            NOTE: Control mappings can be dynamically reconfigured in-game.
-        </div>
-    </section>
-
-    <!-- ════════════════ HUD UPDATES ════════════════ -->
-    <section id="updates" class="hud-section dark">
-        <div class="hud-frame-glow"></div>
-
-        <h2 class="hud-title">UPDATES</h2>
-        <p class="hud-subtitle">If you want to keep an eye on the development progress, check out these pages:</p>
-
-        <div class="hud-updates">
-
-            <a href="https://www.youtube.com/@gamesbylaymon" target="_blank" rel="noopener" class="hud-update-card">
-                <div class="hud-icon">📺</div>
-                <h4>YouTube Channel</h4>
-                <span>Devlogs &amp; trailers</span>
-            </a>
-
-            <a href="https://discord.com/invite/r2t59qmtWc" target="_blank" rel="noopener" class="hud-update-card">
-                <div class="hud-icon">👾</div>
-                <h4>Discord</h4>
-                <span>Join The Community!</span>
-            </a>
-
-            <a href="https://gamejolt.com/games/Parallox/960336" target="_blank" rel="noopener" class="hud-update-card">
-                <div class="hud-icon">🎮</div>
-                <h4>GameJolt</h4>
-                <span>Downloads, community, &amp; news</span>
-            </a>
-
-            <a href="https://laymon-games.itch.io/parallox" target="_blank" rel="noopener" class="hud-update-card">
-                <div class="hud-icon">🔥</div>
-                <h4>Itch.io</h4>
-                <span>Downloads, community, &amp; news</span>
-            </a>
-
-            <a href="updates/index.html" class="hud-update-card hud-update-wide">
-                <div class="hud-icon">🛰️</div>
-                <h4>Updates Page</h4>
-                <span>see game news!</span>
-            </a>
-
-        </div>
-    </section>
-
-
-    <!-- ════════════════ HUD FAQ ════════════════ -->
-    <section id="faq" class="hud-section">
-        <div class="hud-frame-glow"></div>
-
-        <h2 class="hud-title">FAQ</h2>
-        <p class="hud-subtitle">Frequently Asked Questions</p>
-
-        <div class="hud-faq">
-
-            <div class="hud-faq-item">
-                <div class="hud-faq-question" onclick="toggleHudFAQ(this)">
-                    <span>▸</span>
-                    <h4>What type of game is Parallox?</h4>
-                </div>
-                <div class="hud-faq-answer">
-                    Parallox is a pixel-style, 2D, action RPG indie game.
-                </div>
-            </div>
-
-            <div class="hud-faq-item">
-                <div class="hud-faq-question" onclick="toggleHudFAQ(this)">
-                    <span>▸</span>
-                    <h4>When will the full game be released?</h4>
-                </div>
-                <div class="hud-faq-answer">
-                    The game is under active development, the estimated release window is: 2028–2029.
-                </div>
-            </div>
-
-            <div class="hud-faq-item">
-                <div class="hud-faq-question" onclick="toggleHudFAQ(this)">
-                    <span>▸</span>
-                    <h4>Is it single player or multiplayer?</h4>
-                </div>
-                <div class="hud-faq-answer">
-                    Parallox is a single player game.
-                </div>
-            </div>
-
-            <div class="hud-faq-item">
-                <div class="hud-faq-question" onclick="toggleHudFAQ(this)">
-                    <span>▸</span>
-                    <h4>Who is the creator of Parallox?</h4>
-                </div>
-                <div class="hud-faq-answer">
-                    Laymon Games — solo developer handling code, sound, art, story, and design.
-                </div>
-            </div>
-
-            <div class="hud-faq-item">
-                <div class="hud-faq-question" onclick="toggleHudFAQ(this)">
-                    <span>▸</span>
-                    <h4>What engine is the game being made in?</h4>
-                </div>
-                <div class="hud-faq-answer">
-                    Demo: GameMaker. Full release: may migrate to another engine.
-                </div>
-            </div>
-
-            <div class="hud-faq-item">
-                <div class="hud-faq-question" onclick="toggleHudFAQ(this)">
-                    <span>▸</span>
-                    <h4>What platforms will it be available on?</h4>
-                </div>
-                <div class="hud-faq-answer">
-                    PC (Windows, Linux), Mobile (Android), and potentially consoles.
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-
-
-    <section id="contact" class="hud-section contact-luxury">
-        <div class="hud-frame-glow"></div>
-
-        <h2 class="hud-title">CONTACT</h2>
-        <p class="hud-subtitle">CLICK TO COPY THE EMAIL</p>
-
-        <div class="lux-row">
-
-            <button type="button" class="lux-mail" data-email="gamesbylaymon@gmail.com">
-                <div class="mail-icon">📨</div>
-                <div class="mail-info">
-                    <span class="site-title">LAYMON GAMES</span>
-                    <strong>gamesbylaymon@gmail.com</strong>
-                </div>
-                <div class="status-light"></div>
-
-                <div class="copy-msg">COPIED!</div>
-            </button>
-
-            <button type="button" class="lux-mail" data-email="youcefbenredjem23@gmail.com">
-                <div class="mail-icon">💻</div>
-                <div class="mail-info">
-                    <span class="site-title">THE WEB DEVELOPER</span>
-                    <strong>youcefbenredjem23@gmail.com</strong>
-                </div>
-                <div class="status-light"></div>
-
-                <div class="copy-msg">COPIED!</div>
-            </button>
-
-        </div>
-
-        <div class="lux-support">
-            <h3>LIKE WHAT I DO?</h3>
-            <p>your support is much more important than you think, fuel this project and help with keeping it alive!</p>
-
-            <div class="action-buttons">
-                <button type="button" class="lux-btn donate" onclick="openDonateModal()">
-                    <span>❤ DONATE ❤</span>
-                </button>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- DONATE MODAL -->
-<div id="donateModal" class="modal-overlay" onclick="closeDonateModal()">
-  <div class="modal-content donate-content" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeDonateModal()" aria-label="Close donation dialog">✕</button>
-
-    <h2 style="margin-bottom:20px;color:#ff003c;letter-spacing:3px;">
-      SUPPORT THE PROJECT
-    </h2>
-
-    <p style="color:#aaa;margin-bottom:20px;">
-      Help keep the development moving on!
-    </p>
-
-    <a class="paypal-donate-link" href="https://www.paypal.com/ncp/payment/MWC77EFXGXZXU" target="_blank" rel="noopener">
-        Donate
+    <a class="hero__cue" href="#omega-singularity">
+      <span>SCROLL</span>
+      <svg aria-hidden="true"><use href="#i-chevron-down"/></svg>
     </a>
+  </section>
 
-    <p class="donate-note">
-      You’ll be securely redirected to PayPal to complete your donation.
-    </p>
+  <!-- ════════════════ CINEMATIC CAROUSEL ════════════════ -->
+  <section class="section section--cinema" id="media">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title" id="media-heading">GAME MOMENTS</h2>
+        <p class="section__sub">
+          Mike is our main character, he grows up in a harsh environment and slowly loses his mind.<br>
+          Filled with hate, he's now seeking revenge. One day, an incurable illness strikes the town, and Mike goes into a coma.<br>
+          Desperate to save him, his scientist father resorts to his last option.. “Project 13”.
+        </p>
+      </header>
+
+      <div class="carousel" id="carousel" role="group" aria-roledescription="carousel" aria-labelledby="media-heading">
+        <div class="carousel__stage" id="carouselStage">
+
+          <figure class="shot" data-index="0">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot1.webp" alt="Game moment 1" width="960" height="540" loading="lazy" decoding="async">
+          </figure>
+
+          <figure class="shot" data-index="1">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot2.webp" alt="Game moment 2" width="960" height="540" loading="lazy" decoding="async">
+          </figure>
+
+          <figure class="shot" data-index="2">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot3.webp" alt="Game moment 3: The Past" width="960" height="540" loading="lazy" decoding="async">
+            <figcaption class="shot__body">
+              <span class="shot__title">THE PAST</span>
+              <span class="shot__info">back when things were normal...</span>
+            </figcaption>
+          </figure>
+
+          <figure class="shot" data-index="3">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot4.webp" alt="Game moment 4: Parallox" width="960" height="540" loading="lazy" decoding="async">
+            <figcaption class="shot__body">
+              <span class="shot__title">Parallox</span>
+              <span class="shot__info">where the hero is also the villain</span>
+            </figcaption>
+          </figure>
+
+          <figure class="shot" data-index="4">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot5.webp" alt="Game moment 5: The Present" width="960" height="540" loading="lazy" decoding="async">
+            <figcaption class="shot__body">
+              <span class="shot__title">THE PRESENT</span>
+              <span class="shot__info">a broken relationship between a son and a father</span>
+            </figcaption>
+          </figure>
+
+          <figure class="shot" data-index="5">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot6.webp" alt="Game moment 6" width="960" height="540" loading="lazy" decoding="async">
+          </figure>
+
+          <figure class="shot" data-index="6">
+            <div class="shot__top"><img src="assets/logo-mark.webp" alt="" width="64" height="67" loading="lazy" decoding="async"></div>
+            <img class="shot__img" src="assets/Screenshot7.webp" alt="Game moment 7" width="960" height="540" loading="lazy" decoding="async">
+          </figure>
+
+        </div>
+
+        <div class="carousel__nav">
+          <button class="carousel__arrow" type="button" data-carousel="prev" aria-label="Game moment 1">
+            <svg aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </button>
+          <div class="carousel__dots" id="carouselDots"></div>
+          <button class="carousel__arrow" type="button" data-carousel="next" aria-label="Game moment 4">
+            <svg aria-hidden="true"><use href="#i-chevron-right"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ ABOUT ════════════════ -->
+  <section class="section section--dark" id="about">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">WELCOME TO A PARALLEL REALITY</h2>
+        <p class="section__sub">
+          Every dimension has a version of you, each version is special in its own way!
+        </p>
+      </header>
+
+      <dl class="stats">
+        <div class="stat"><dt>PERSON</dt><dd><span class="count" data-to="1">1</span></dd></div>
+        <div class="stat"><dt>VARIANTS</dt><dd><span class="count" data-to="8">8</span></dd></div>
+        <div class="stat"><dt>MISSION</dt><dd><span class="count" data-to="1">1</span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ════════════════ FEATURES ════════════════ -->
+  <section class="section" id="features">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">CORE FEATURES</h2>
+      </header>
+
+      <ul class="features">
+        <li class="feature">
+          <span class="feature__icon"><svg aria-hidden="true"><use href="#i-orbit"/></svg></span>
+          <h3>Dimension Switching</h3>
+        </li>
+        <li class="feature">
+          <span class="feature__icon"><svg aria-hidden="true"><use href="#i-sword"/></svg></span>
+          <h3>Dynamic 2D Combat</h3>
+        </li>
+        <li class="feature">
+          <span class="feature__icon"><svg aria-hidden="true"><use href="#i-skull"/></svg></span>
+          <h3>DEEP LORE</h3>
+        </li>
+        <li class="feature">
+          <span class="feature__icon"><svg aria-hidden="true"><use href="#i-hourglass"/></svg></span>
+          <h3>Time Manipulation</h3>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ════════════════ CHARACTERS ════════════════ -->
+  <section class="section section--dark" id="characters">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">MAIN CHARACTERS</h2>
+        <p class="section__sub">The full game’s playable characters, each has a unique role in the game.</p>
+      </header>
+
+      <div class="cast">
+        <button class="character character--mikie" type="button" data-character data-voice="assets/mikievoice.mp3" aria-pressed="false">
+          <span class="character__portrait"></span>
+          <span class="character__body">
+            <span class="character__name">MIKIE</span>
+            <span class="character__desc">Our smiley little boy! But don’t the let looks fool you, this boy has the bravery of a man inside him!</span>
+            <span class="character__cue"><svg aria-hidden="true"><use href="#i-volume-2"/></svg></span>
+          </span>
+        </button>
+
+        <button class="character character--mike" type="button" data-character data-voice="assets/mikevoice.mp3" aria-pressed="false">
+          <span class="character__portrait"></span>
+          <span class="character__body">
+            <span class="character__name">MIKE</span>
+            <span class="character__desc">Sounds familiar? Yes, that’s the same person on the left. It’s Mikie, but.. older?! Get ready to meet insanity in person! But watch out! Mike has an evil plan to destroy the town!</span>
+            <span class="character__cue"><svg aria-hidden="true"><use href="#i-volume-2"/></svg></span>
+          </span>
+        </button>
+
+        <button class="character character--walter" type="button" data-character data-voice="assets/waltervoice.mp3" aria-pressed="false">
+          <span class="character__portrait"></span>
+          <span class="character__body">
+            <span class="character__name">WALTER</span>
+            <span class="character__desc">Mike’s father, and the town’s local scientist. He became the most hated person in town after the incident happened..</span>
+            <span class="character__cue"><svg aria-hidden="true"><use href="#i-volume-2"/></svg></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ DEMO PORTAL ════════════════
+       Original singularity mechanism (gyroscope rings, vortex, 3D tilt that
+       tracks the pointer) with the new cosmos layers behind it. -->
+  <section class="omega" id="omega-singularity">
+    <div class="omega__root" id="omegaRoot">
+      <div class="omega__flash" id="horizonFlash" aria-hidden="true"></div>
+
+      <div class="cosmos" aria-hidden="true">
+        <div class="cosmos__nebula"></div>
+        <div class="cosmos__stars"></div>
+        <div class="cosmos__rays"></div>
+      </div>
+
+      <div class="hud-frame" aria-hidden="true"></div>
+
+      <div class="omega__readout omega__readout--top">
+        <h1 class="omega__title">PARALLOX DEMO</h1>
+        <p class="omega__sub">The free demo is available <span>for PC and Android on:</span></p>
+      </div>
+
+      <div class="artifact" id="artifact">
+        <button type="button" class="core">
+          <span class="energy-ring ring-outer"></span>
+          <span class="energy-ring ring-mid"></span>
+          <span class="energy-ring ring-inner"></span>
+          <span class="singularity-vortex"><i></i></span>
+          <span class="activation-label" id="actionText">Project 13</span>
+        </button>
+      </div>
+
+      <p class="omega__status" id="systemStatus" role="status">WAITING FOR USER INPUT...</p>
+    </div>
+  </section>
+
+  <!-- ════════════════ GAME CONTROLS ════════════════ -->
+  <section class="section section--dark section--hud" id="controls">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">GAME CONTROLS</h2>
+        <p class="section__sub">These are the already existing controls in demo, full game may have some changes.</p>
+      </header>
+
+      <ul class="keys">
+        <li class="key"><svg aria-hidden="true"><use href="#i-chevron-up"/></svg><span class="key__name">UP</span><kbd>Arrow Up / W</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-chevron-down"/></svg><span class="key__name">DOWN</span><kbd>Arrow Down / S</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-chevron-left"/></svg><span class="key__name">LEFT</span><kbd>Arrow Left / A</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-chevron-right"/></svg><span class="key__name">RIGHT</span><kbd>Arrow Right / D</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-check"/></svg><span class="key__name">ACCEPT</span><kbd>Enter / Z</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-x"/></svg><span class="key__name">CANCEL</span><kbd>Backspace / X</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-menu"/></svg><span class="key__name">MENU</span><kbd>Space / C</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-zap"/></svg><span class="key__name">SPRINT</span><kbd>Shift</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-footprints"/></svg><span class="key__name">DANCE</span><kbd>E</kbd></li>
+        <li class="key"><svg aria-hidden="true"><use href="#i-map"/></svg><span class="key__name">MAP</span><kbd>M</kbd></li>
+      </ul>
+
+      <p class="section__foot">NOTE: Control mappings can be dynamically reconfigured in-game.</p>
+    </div>
+  </section>
+
+  <!-- ════════════════ UPDATES ════════════════ -->
+  <section class="section section--hud" id="updates">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">UPDATES</h2>
+        <p class="section__sub">If you want to keep an eye on the development progress, check out these pages:</p>
+      </header>
+
+      <ul class="channels">
+        <li>
+          <a class="channel" href="https://www.youtube.com/@gamesbylaymon" target="_blank" rel="noopener">
+            <span class="channel__icon"><svg aria-hidden="true"><use href="#i-youtube"/></svg></span>
+            <span class="channel__name">YouTube Channel</span>
+            <span class="channel__desc">Devlogs &amp; trailers</span>
+            <span class="channel__go"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+          </a>
+        </li>
+        <li>
+          <a class="channel" href="https://discord.com/invite/r2t59qmtWc" target="_blank" rel="noopener">
+            <span class="channel__icon"><svg aria-hidden="true"><use href="#i-discord"/></svg></span>
+            <span class="channel__name">Discord</span>
+            <span class="channel__desc">Join The Community!</span>
+            <span class="channel__go"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+          </a>
+        </li>
+        <li>
+          <a class="channel" href="https://gamejolt.com/games/Parallox/960336" target="_blank" rel="noopener">
+            <span class="channel__icon"><svg aria-hidden="true"><use href="#i-gamepad-2"/></svg></span>
+            <span class="channel__name">GameJolt</span>
+            <span class="channel__desc">Downloads, community, &amp; news</span>
+            <span class="channel__go"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+          </a>
+        </li>
+        <li>
+          <a class="channel" href="https://laymon-games.itch.io/parallox" target="_blank" rel="noopener">
+            <span class="channel__icon"><svg aria-hidden="true"><use href="#i-flame"/></svg></span>
+            <span class="channel__name">Itch.io</span>
+            <span class="channel__desc">Downloads, community, &amp; news</span>
+            <span class="channel__go"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+          </a>
+        </li>
+        <li class="channels__wide">
+          <a class="channel" href="updates/index.html">
+            <span class="channel__icon"><svg aria-hidden="true"><use href="#i-satellite-dish"/></svg></span>
+            <span class="channel__name">Updates Page</span>
+            <span class="channel__desc">see game news!</span>
+            <span class="channel__go"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ════════════════ FAQ ════════════════ -->
+  <section class="section section--hud" id="faq">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">FAQ</h2>
+        <p class="section__sub">Frequently Asked Questions</p>
+      </header>
+
+      <div class="faq">
+        <div class="faq__item">
+          <h3 class="faq__q">
+            <button type="button" class="faq__btn" aria-expanded="false">
+              <span>What type of game is Parallox?</span>
+              <svg class="faq__chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+          </h3>
+          <div class="faq__a" inert><p>Parallox is a pixel-style, 2D, action RPG indie game.</p></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__q">
+            <button type="button" class="faq__btn" aria-expanded="false">
+              <span>When will the full game be released?</span>
+              <svg class="faq__chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+          </h3>
+          <div class="faq__a" inert><p>The game is under active development, the estimated release window is: 2028–2029.</p></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__q">
+            <button type="button" class="faq__btn" aria-expanded="false">
+              <span>Is it single player or multiplayer?</span>
+              <svg class="faq__chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+          </h3>
+          <div class="faq__a" inert><p>Parallox is a single player game.</p></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__q">
+            <button type="button" class="faq__btn" aria-expanded="false">
+              <span>Who is the creator of Parallox?</span>
+              <svg class="faq__chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+          </h3>
+          <div class="faq__a" inert><p>Laymon Games — solo developer handling code, sound, art, story, and design.</p></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__q">
+            <button type="button" class="faq__btn" aria-expanded="false">
+              <span>What engine is the game being made in?</span>
+              <svg class="faq__chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+          </h3>
+          <div class="faq__a" inert><p>Demo: GameMaker. Full release: may migrate to another engine.</p></div>
+        </div>
+        <div class="faq__item">
+          <h3 class="faq__q">
+            <button type="button" class="faq__btn" aria-expanded="false">
+              <span>What platforms will it be available on?</span>
+              <svg class="faq__chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+          </h3>
+          <div class="faq__a" inert><p>PC (Windows, Linux), Mobile (Android), and potentially consoles.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ CONTACT ════════════════ -->
+  <section class="section section--hud section--contact" id="contact">
+    <div class="shell">
+      <header class="section__head">
+        <h2 class="section__title">CONTACT</h2>
+        <p class="section__sub">CLICK TO COPY THE EMAIL</p>
+      </header>
+
+      <div class="contacts">
+        <button type="button" class="contact" data-email="gamesbylaymon@gmail.com">
+          <span class="contact__icon"><svg aria-hidden="true"><use href="#i-mail"/></svg></span>
+          <span class="contact__body">
+            <span class="contact__who">LAYMON GAMES</span>
+            <span class="contact__addr">gamesbylaymon@gmail.com</span>
+          </span>
+          <span class="contact__light"></span>
+          <span class="contact__copy"><svg aria-hidden="true"><use href="#i-check"/></svg>COPIED!</span>
+        </button>
+
+        <button type="button" class="contact" data-email="youcefbenredjem23@gmail.com">
+          <span class="contact__icon"><svg aria-hidden="true"><use href="#i-code"/></svg></span>
+          <span class="contact__body">
+            <span class="contact__who">THE WEB DEVELOPER</span>
+            <span class="contact__addr">youcefbenredjem23@gmail.com</span>
+          </span>
+          <span class="contact__light"></span>
+          <span class="contact__copy"><svg aria-hidden="true"><use href="#i-check"/></svg>COPIED!</span>
+        </button>
+      </div>
+
+      <div class="support">
+        <h3>LIKE WHAT I DO?</h3>
+        <p>your support is much more important than you think, fuel this project and help with keeping it alive!</p>
+        <button type="button" class="btn btn--primary" data-open-donate>
+          <svg aria-hidden="true"><use href="#i-heart"/></svg>
+          DONATE
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="shell">
+    <p>© 2026 Laymon Games – All Rights Reserved</p>
+    <p>Developed by Youcef Benredjem (ft. Laymon Games)</p>
+  </div>
+</footer>
+
+<!-- ════════════════ MODALS ════════════════
+     The trailer iframe ships with no src, so YouTube is never downloaded on a
+     normal page visit. Both dialogs start hidden. -->
+<div class="modal" id="trailerModal" role="dialog" aria-modal="true" aria-label="PARALLOX Trailer" hidden>
+  <div class="modal__box modal__box--video">
+    <button class="modal__close" type="button" data-close-modal aria-label="Close trailer"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="modal__video"><iframe id="trailerVideo" title="PARALLOX Trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
   </div>
 </div>
 
+<div class="modal" id="donateModal" role="dialog" aria-modal="true" aria-labelledby="donateTitle" hidden>
+  <div class="modal__box">
+    <button class="modal__close" type="button" data-close-modal aria-label="Close donation dialog"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    <h2 id="donateTitle">SUPPORT THE PROJECT</h2>
+    <p>Help keep the development moving on!</p>
+    <a class="btn btn--primary btn--wide" href="https://www.paypal.com/ncp/payment/MWC77EFXGXZXU" target="_blank" rel="noopener">Donate</a>
+    <p class="modal__note">You’ll be securely redirected to PayPal to complete your donation.</p>
+  </div>
+</div>
 
-    <!-- ===== FOOTER ===== -->
-    <footer>
-        <p>© 2026 Laymon Games – All Rights Reserved</p>
-        <p>Developed by Youcef Benredjem (ft. Laymon Games)</p>
-    </footer>
-
-    <script src="script.js" defer></script>
+<script src="script.js" defer></script>
 
 </body>
 </html>
