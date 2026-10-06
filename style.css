@@ -185,7 +185,7 @@ html[data-fx="lite"] .nav{background:rgba(5,7,14,.96)}
   display:flex;align-items:center;gap:.55rem;
   margin-right:auto;
   padding:.25rem .7rem .25rem .3rem;
-  border:1px solid rgba(255,255,255,.9);
+  border:1px solid rgba(255, 255, 255, 0.178);
   border-radius:var(--r-md);
   text-decoration:none;
   transition:transform .3s var(--ease),border-color .25s,box-shadow .3s;
